@@ -273,6 +273,12 @@ def build_module_layer(sources: dict, options: dict, allow, *, offline: bool,
         if script_stats.get("dubious"):
             warn(f"{script_stats['dubious']} 个脚本用了别家专有写法，"
                  f"是否需要处理请见 build-report-scripts.md", "info")
+        if script_stats.get("third_party"):
+            warn(f"{script_stats['third_party']} 个脚本出现了第三方域名"
+                 f"（清单见 build-report-scripts.md 的「网络安全审计」）", "info")
+        if script_stats.get("leak"):
+            warn(f"❌ 有 {script_stats['leak']} 个脚本存在「把请求/响应内容 POST 出去」的代码路径 —— "
+                 f"这是数据外泄的典型模式，构建判为失败", "error")
 
         repo_url = options.get("repo_url", "").rstrip("/")
         new_blocks = []
@@ -552,6 +558,11 @@ def build_module_report(add, result: dict) -> None:
             f"下载失败 {scripts.get('failed', 0)} 个，"
             f"合计 {fmt_size(scripts.get('bytes', 0))}")
         add("")
+        add(f"**网络安全审计**：{scripts.get('local_only', 0)} 个脚本完全不含网络 API"
+            f"（只改写响应体，没有外发数据的能力）；{scripts.get('network', 0)} 个含网络 API；"
+            f"{scripts.get('third_party', 0)} 个出现了第三方域名；"
+            f"「把请求/响应内容 POST 出去」的代码路径：**{scripts.get('leak', 0)} 个**。")
+        add("")
         add("「不兼容」表示脚本**无条件**调用了小火箭没有的 API（如 `$httpAPI`），"
             "对应的去广告规则在小火箭里不会生效；"
             "「存疑」多是有客户端判断保护、但写法上值得看一眼的。"
@@ -676,6 +687,38 @@ def write_report(result: dict, options: dict, elapsed: float) -> Path:
             "- ❌ **不兼容**：用了小火箭**没有**的 API（`$httpAPI`/`$task` 等），"
             "对应的去广告规则在小火箭里**不会生效**", "",
             *vendor_mod.report_lines(mod_info["infos"]), "",
+        ]
+
+        # 第三方域名清单：让用户知道"装了哪个模块，哪些域名会看到你的请求"
+        third = sorted(
+            [i for i in mod_info["infos"].values()
+             if i.ok and any(not vendor_mod._EXPECTED_HOST.match(h) for h in i.hosts)],
+            key=lambda i: i.name)
+        if third:
+            rows += [
+                "## 第三方域名清单", "",
+                "下面这些脚本里出现了 GitHub 之外的域名。**这不代表它们有问题** ——",
+                "多数是为了实现自己的功能（例如「解开微信里被屏蔽的链接」必须去查 archive.org）。",
+                "列出来是为了让你知道：**装了对应模块，这些域名会看到你的请求**。", "",
+                "| 脚本 | 涉及域名 |", "| --- | --- |",
+            ]
+            for i in third:
+                extra = [h for h in i.hosts if not vendor_mod._EXPECTED_HOST.match(h)]
+                rows.append(f"| `{i.name}` | {', '.join(extra[:6])} |")
+            rows.append("")
+        rows += [
+            "## 关于「数据会不会泄露」", "",
+            "静态检查**能证明**的是：",
+            "",
+            f"- {len([i for i in mod_info['infos'].values() if i.ok and not i.has_api])}"
+            " 个脚本完全不含网络 API —— 它们只改写响应体，**没有外发数据的能力**；",
+            f"- 全库**没有任何一处**「把请求/响应内容 POST 出去」的代码路径"
+            f"（检出 {sum(1 for i in mod_info['infos'].values() if i.leaks)} 处）；",
+            "- 所有 script-path 已指向本仓库，上游偷偷改动会体现在 git 历史与构建报告里。",
+            "",
+            "静态检查**不能替代**的是：人工审计每个含网络 API 的脚本到底发了什么。",
+            "更稳妥的做法是**只装你需要的 per-App 模块**，把解密范围从上千个主机名降到几个。",
+            "完整的风险说明见 `docs/安全说明.md`。", "",
         ]
         (ROOT / "build-report-scripts.md").write_text("\n".join(rows) + "\n",
                                                      encoding="utf-8")

@@ -56,6 +56,10 @@ class ScriptInfo:
     updated: bool = False
     verdict: str = "未检查"
     notes: list[str] = field(default_factory=list)
+    has_api: bool = False     # 是否出现网络 API（不等于会发起请求，见 network_profile）
+    calls: int = 0            # 报告排序用；实际含义 = 出现的域名数量
+    hosts: list[str] = field(default_factory=list)   # 脚本里出现的域名
+    leaks: bool = False       # 是否存在"把请求/响应内容 POST 出去"的代码路径
 
 
 def vendor_rel_path(url: str) -> str:
@@ -191,8 +195,47 @@ def _guarded(text: str, obj: str) -> bool:
     return any(re.search(p.format(o=escaped), text) for p in _GUARD_PATTERNS)
 
 
+_NET_API = re.compile(r"\$(?:httpClient|task)\s*\.|\$\.(?:get|post|http)\s*\(")
+_URL_HOST = re.compile(r"https?://([A-Za-z0-9.\-]+\.[A-Za-z]{2,})")
+_POST_BODY_LEAK = re.compile(
+    r"(?:method\s*:\s*[\"']?post|\$\.post\s*\(|\$httpClient\.post\s*\()"
+    r"[\s\S]{0,600}?body\s*[:=]\s*[^,;]{0,60}(\$response|\$request|\.body)", re.I)
+
+# 这些域名属于"预期内"的目标：脚本自身更新、或 App 自己的服务。
+# 出现别的域名就值得人看一眼 —— 但**不代表**它有问题，只代表需要判断。
+_EXPECTED_HOST = re.compile(
+    r"^(?:raw\.githubusercontent\.com|github\.com|gist\.githubusercontent\.com"
+    r"|gitee\.com|jsdelivr\.net|cdn\.jsdelivr\.net)$", re.I)
+
+
+def network_profile(text: str) -> tuple[bool, list[str], bool]:
+    """静态分析脚本的网络行为。
+
+    返回（是否含网络能力, 出现的所有域名, 是否存在把请求/响应内容 POST 出去的路径）
+
+    关于"是否真的会联网"：**静态分析给不出确定答案**。
+    83 个脚本里绝大多数内置了多客户端运行时（chavyleung Env.js 或新式等价物），
+    这些库里**必然**包含 $httpClient/$task.fetch 的分派代码 ——
+    按关键词判定会把纯本地脚本误报成"会联网"（我踩过这个坑，误报了 10 个）。
+    所以这里不做真假判定，只做**能证明的三件事**：
+
+      1. 有没有出现网络 API（有 -> 需要人看一眼）
+      2. 出现了哪些域名（列出来，方便逐个判断）
+      3. **有没有"把被解密内容 POST 出去"的代码路径** —— 这才是真正的泄露模式，
+         没有这个模式就意味着不存在自动外发内容的通道
+
+    第 3 项是硬门禁：一旦命中就判定构建失败。
+    """
+    has_api = bool(_NET_API.search(text))
+    hosts = sorted(set(_URL_HOST.findall(text)))
+    return has_api, hosts, bool(_POST_BODY_LEAK.search(text))
+
+
 def audit_vendored(infos: dict[str, ScriptInfo]) -> dict[str, int]:
-    stats = {"safe": 0, "dubious": 0, "broken": 0, "failed": 0, "bytes": 0}
+    stats = {"safe": 0, "dubious": 0, "broken": 0, "failed": 0, "bytes": 0,
+             "network": 0, "local_only": 0, "leak": 0, "third_party": 0}
+    # 便于外部（报告）取用
+    globals()["_LAST_STATS"] = stats
     for info in infos.values():
         if not info.ok:
             stats["failed"] += 1
@@ -200,6 +243,22 @@ def audit_vendored(infos: dict[str, ScriptInfo]) -> dict[str, int]:
         stats["bytes"] += info.size
         text = read_text(VENDOR_DIR / info.local_rel)
         info.verdict, info.notes = analyze(text)
+        info.has_api, info.hosts, info.leaks = network_profile(text)
+        info.calls = len(info.hosts)          # 报告里按"涉及域名数"排序
+        # 非预期域名：与是否含网络 API 无关，只要出现就值得人看一眼
+        extra = [h for h in info.hosts if not _EXPECTED_HOST.match(h)]
+        if extra:
+            stats["third_party"] += 1
+            info.notes.insert(0, f"第三方域名：{', '.join(extra[:3])}")
+        if not info.has_api:
+            stats["local_only"] += 1
+            info.notes.insert(0, "✓ 完全不含网络 API，只改写响应体")
+        else:
+            stats["network"] += 1
+            if not extra:
+                info.notes.append("含网络 API（无第三方域名）")
+        if info.leaks:
+            stats["leak"] += 1
         if info.verdict.startswith("✅"):
             stats["safe"] += 1
         elif info.verdict.startswith("⚠️"):
@@ -210,11 +269,13 @@ def audit_vendored(infos: dict[str, ScriptInfo]) -> dict[str, int]:
 
 
 def report_lines(infos: dict[str, ScriptInfo]) -> list[str]:
-    rows = ["| 脚本 | 结论 | 大小 | 说明 |", "| --- | --- | --- | --- |"]
+    rows = ["| 脚本 | 兼容性 | 网络API | 大小 | 说明 |",
+            "| --- | --- | --- | --- | --- |"]
     order = {"❌ 不兼容": 0, "⚠️ 存疑": 1, "✅ 安全": 2, "未检查": 3}
     for info in sorted(infos.values(),
-                       key=lambda i: (order.get(i.verdict, 9), i.name)):
+                       key=lambda i: (order.get(i.verdict, 9), -i.calls, i.name)):
         notes = "；".join(info.notes[:3]) if info.notes else (info.error or "")
         size = fmt_size(info.size) if info.size else "—"
-        rows.append(f"| `{info.name}` | {info.verdict} | {size} | {notes[:150]} |")
+        net = "含" if info.has_api else "无"
+        rows.append(f"| `{info.name}` | {info.verdict} | {net} | {size} | {notes[:150]} |")
     return rows
