@@ -11,10 +11,29 @@
 [![最近构建](https://img.shields.io/github/last-commit/ithtelab/sr-adblock/release?label=%E6%9C%80%E8%BF%91%E6%9E%84%E5%BB%BA)](https://github.com/ithtelab/sr-adblock/commits/release)
 ![广告域名](https://img.shields.io/badge/%E5%B9%BF%E5%91%8A%E5%9F%9F%E5%90%8D-28.6%E4%B8%87-2ea44f)
 ![适配 App](https://img.shields.io/badge/%E8%A6%86%E7%9B%96%20App-726%20%E6%AC%BE-blue)
-![平台](https://img.shields.io/badge/%E5%B9%B3%E5%8F%B0-iOS%20%C2%B7%20Shadowrocket-black)
+![平台](https://img.shields.io/badge/%E5%B9%B3%E5%8F%B0-iOS%20%C2%B7%20%E5%B0%8F%E7%81%AB%E7%AE%AD-black)
+![不支持](https://img.shields.io/badge/%E4%B8%8D%E6%94%AF%E6%8C%81-Android%20%2F%20%E5%AE%89%E5%8D%93-red)
 [![协议](https://img.shields.io/badge/%E5%8D%8F%E8%AE%AE-MIT-yellow)](LICENSE)
 
 **本仓库不含任何节点、订阅、账号信息 —— 只有规则。**
+
+> ## ⚠️ 只支持 iOS + 小火箭（Shadowrocket）
+>
+> **不支持安卓，也不支持 iPhone 上的其他代理 App**（Clash / sing-box / v2rayNG / Quantumult X 都读不了）。
+>
+> 原因很简单：产物的语法是小火箭（和 Surge 系）专用的 ——
+> 配置里用了 `policy-regex-filter`、`DOMAIN-SET`、`%APPEND%`，
+> 模块是 `.srmodule`（重写 / 脚本 / MITM 那套），规则集是"有类型、无策略列"的写法。
+> **安卓客户端一种都读不了。**
+>
+> 而且更根本的问题是：**安卓上做不了"去开屏广告"这类能力** ——
+> Clash / Mihomo 没有 HTTPS 解密（MITM），sing-box 不支持脚本，
+> 所以本项目的模块层（改响应体、去开屏广告）在安卓上没有对应实现。
+>
+> 安卓能用的只有"按域名拦截"这一部分，而且必须**转换格式**
+> （Clash 要 YAML 的 `payload:`，sing-box 要 JSON，AdGuard 是 `||domain^`）。
+> 本项目的上游（blackmatrix7、fmz200）都提供安卓格式，可以去那里取现成的。
+> 详见 [常见问题 → 我是安卓，能用吗](#-常见问题)。
 
 </div>
 
@@ -356,6 +375,56 @@ cache/      上游原始文件缓存（不入库）
 ---
 
 ## ❓ 常见问题
+
+<details>
+<summary><b>我是安卓手机，能用吗？</b></summary>
+
+**不能。** 产物的语法是小火箭/Surge 系专用的：
+
+| 产物 | 用的东西 | 安卓能读吗 |
+| :-- | :-- | :-- |
+| `conf/base.conf` | `[Proxy Group]` + `policy-regex-filter`、`DOMAIN-SET`、`RULE-SET` | ❌ |
+| `module/*.srmodule` | 模块格式（`[URL Rewrite]`/`[Body Rewrite]`/`[Map Local]`/`[Script]`/`[MITM]`） | ❌ |
+| `ruleset/*.list` | 有规则类型、无策略列的规则集写法 | ❌（格式不同） |
+
+**更根本的问题是：安卓上做不了"去开屏广告"。**
+这一层的原理是让 App 解密 HTTPS 流量再改写响应体，而：
+- **Clash / Mihomo 没有 MITM**（不解密就改不了内容）
+- **sing-box 不支持脚本**
+- v2rayNG 等只做分流
+
+所以安卓能用的只有**按域名拦截**（也就是本项目的①域名层），而且必须先转格式：
+Clash 要 YAML 的 `payload:`、sing-box 要 JSON、AdGuard 用 `||domain^`。
+
+**安卓用户建议**：直接去上游找现成的安卓格式，别转换本项目的产物：
+- [blackmatrix7/ios_rule_script](https://github.com/blackmatrix7/ios_rule_script) 的 `rule/Clash/Advertising/` —— 同一个源，Clash YAML
+- 它的 `rule/AdGuard/Advertising/Advertising.txt` —— 就是 AdGuard 语法
+- Clash 用户还可以用 `rule-providers` 直接订阅 YAML
+
+> 顺带说明：本项目**能不能**支持安卓？技术上可以新增一层输出（域名层的域名是通用的，
+> 转成 Clash YAML / sing-box JSON 就行），但它只覆盖①域名层，
+> 带来不了任何"去开屏广告"的能力 —— 而后者才是本项目的重点。
+> 如果你需要，可以提 issue，我评估要不要做。
+
+</details>
+
+<details>
+<summary><b>我是 iPhone，但用的是 Clash / Quantumult X / Stash，能用吗？</b></summary>
+
+**不能直接使用。** 本项目只针对 **Shadowrocket（小火箭）** 输出：
+`.srmodule` 模块、`DOMAIN-SET`/`RULE-SET` 写法、`policy-regex-filter` 这些分组参数，
+都是小火箭/Surge 的语法。
+
+Quantumult X 的重写要用 `[rewrite_local]` + `url ... jsonjq-response-body` 那种写法，
+Clash / Stash 用 YAML —— 都和小火箭不同，**没有测试过、也不保证可用**。
+
+**Surge**（iOS/macOS）格式和小火箭最接近，本项目的模块内容理论上能被 Surge 读，
+但**没有测试过**，不要当成支持。
+
+如果你用的是 Loon / QX，去可莉（fmz200）那边找对应格式，他同时维护了
+`Loon/plugin/`、`QuantumultX/rewrite/` 的同类产物。
+
+</details>
 
 <details>
 <summary><b>装完没效果？</b></summary>
