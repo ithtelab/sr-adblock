@@ -20,12 +20,17 @@ domain_layer:
   promote_exact_to_suffix: false
 
 module_layer:
+  # 从规则的匹配模式反推"该解密却没声明"的主机名并补上
+  # （上游 50 个 per-App 模块共 69 条规则因此永远不执行；金融类主机受守卫保护不自动开）
+  derive_mitm_hosts: true
   # 把第三方脚本抓到本仓库 vendor/ 下（避免上游删库导致规则静默失效）
   vendor_scripts: true
   # 扫描脚本里小火箭不支持的 API（$httpAPI / $task / $loon）
   scan_incompatible_api: true
   # MITM 主机名超过这个数量就告警（小火箭在 iOS 15 以下内存预算只有 15MB）
-  mitm_warn_threshold: 1000
+  # 当前实际约 1,010 个（补上 64 个"该解密却没声明"的主机名之后）。
+  # iOS 15 以下建议别装总模块，只装需要的几个 per-App 模块，主机名能降到几十个。
+  mitm_warn_threshold: 1100
 
 # 构建产物的订阅根地址（Phase 5 建仓后改成你的仓库地址）
 repo_url: https://raw.githubusercontent.com/ithtelab/sr-adblock/release

@@ -155,6 +155,19 @@ def build_domain_layer(sources: dict, options: dict, allow, *,
             "out_dir": out_dir, "names": names}
 
 
+def load_mitm_extra() -> list[str]:
+    """读 config/mitm-extra.txt：用户手动同意开启解密的主机名。"""
+    path = CONFIG_DIR / "mitm-extra.txt"
+    if not path.exists():
+        return []
+    out = []
+    for line in read_text(path).splitlines():
+        s = line.split("#", 1)[0].strip()
+        if s:
+            out.append(s)
+    return out
+
+
 def build_module_layer(sources: dict, options: dict, allow, *, offline: bool,
                        refresh: bool) -> dict:
     """模块层：合并去广告模块、本地化脚本、产出小火箭原生模块。"""
@@ -272,6 +285,23 @@ def build_module_layer(sources: dict, options: dict, allow, *, offline: bool,
             new_blocks.append(b)
         sections["[Script]"] = new_blocks
         log(f"  ├ 已把 {human(rewritten)} 条规则的 script-path 改指本仓库")
+
+    # 补齐"规则要解密却没声明主机名"的缺陷（带金融守卫）
+    mitm_add, mitm_held, mitm_stats = [], [], {}
+    approved = load_mitm_extra()
+    if opt.get("derive_mitm_hosts", True):
+        mitm_add, mitm_held, mitm_stats = module_mod.derive_mitm_hosts(
+            sections, approved=approved)
+        module_mod.append_mitm(sections, list(dict.fromkeys(approved + mitm_add)))
+        if mitm_add:
+            log(f"  ├ 补上缺失的 MITM 主机名 {len(mitm_add)} 个"
+                f"（这些规则原本永远不会执行）：{', '.join(mitm_add[:5])}"
+                f"{' …' if len(mitm_add) > 5 else ''}")
+        if mitm_held:
+            log(f"  ├ 金融守卫拦下 {len(mitm_held)} 个主机名，未自动开启解密"
+                f"（要开就写进 config/mitm-extra.txt）")
+    if approved:
+        log(f"  ├ 按 config/mitm-extra.txt 手动开启解密 {len(approved)} 个主机名")
 
     section("④ 输出模块")
     mitm_count = len(module_mod.parse_mitm(
@@ -404,7 +434,8 @@ def build_module_layer(sources: dict, options: dict, allow, *, offline: bool,
         vendor_map = {u: i.local_rel for u, i in infos.items() if i.ok}
         app_stats = apps_mod.build_app_modules(
             sources.get("app_module_source", {}), offline=offline, refresh=refresh,
-            vendor_map=vendor_map, repo_url=options.get("repo_url", "").rstrip("/"))
+            vendor_map=vendor_map, repo_url=options.get("repo_url", "").rstrip("/"),
+            approved_mitm=approved)
         if not app_stats.get("skipped"):
             log(f"  生成 {human(app_stats['apps'])} 个 per-App 模块"
                 f"（归并自上游 {human(app_stats['variants'])} 个 split 文件，"
@@ -417,6 +448,8 @@ def build_module_layer(sources: dict, options: dict, allow, *, offline: bool,
 
     return {"skipped": False, "fetch_rows": fetch_rows, "sections": sections,
             "app_stats": app_stats, "allow_dropped": allow_dropped,
+            "mitm_add": mitm_add, "mitm_held": mitm_held, "mitm_stats": mitm_stats,
+            "mitm_approved": approved,
             "rep": rep, "mitm": mitm_count, "path": path, "total": total,
             "httpdns_path": httpdns_path, "httpdns_total": httpdns_total,
             "mitm_excl_path": mitm_excl_path,
@@ -476,6 +509,25 @@ def build_module_report(add, result: dict) -> None:
     for name, blocks in mod["sections"].items():
         add(f"| `{name}` | {human(len(blocks))} |")
     add("")
+
+    held = mod.get("mitm_held") or []
+    if held or mod.get("mitm_add") or mod.get("mitm_approved"):
+        add("### MITM 主机名修复")
+        add("")
+        st = mod.get("mitm_stats") or {}
+        add(f"- 检查了 {human(st.get('needed', 0))} 个规则涉及的主机名，"
+            f"其中 {human(st.get('missing', 0))} 个**该解密却没声明**（规则永远不执行）")
+        add(f"- 已自动补上：{human(len(mod.get('mitm_add') or []))} 个")
+        if mod.get("mitm_approved"):
+            add(f"- 按 `config/mitm-extra.txt` 手动开启：{human(len(mod['mitm_approved']))} 个")
+        if held:
+            add(f"- **金融守卫拦下 {len(held)} 个**（银行/券商/支付类默认不自动开解密，"
+                f"避免你登录不了或交易失败）。确认没问题再手动加进 "
+                f"`config/mitm-extra.txt`：")
+            add("")
+            for host, kw in held:
+                add(f"  - `{host}`（命中关键词 `{kw}`）")
+        add("")
 
     app = mod.get("app_stats") or {}
     if not app.get("skipped"):

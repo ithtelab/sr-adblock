@@ -379,3 +379,111 @@ def filter_rules_by_allowlist(blocks: list[Block], allow) -> tuple[list[Block], 
                 continue
         kept.append(b)
     return kept, dropped
+
+
+# ---------------------------------------------------------------------------
+# MITM 主机名缺失检测与补齐
+# ---------------------------------------------------------------------------
+
+# 默认的金融类守卫关键词：命中这些的域名**不自动开启解密**。
+# 理由：银行/券商/支付类普遍有证书固定与风控检测，多解密一个这类域名就可能
+# 让用户登录不了或交易失败 —— 这个风险不该由构建脚本替用户承担。
+# 用户如果确认某个 App 没问题，可以自己在 config/mitm-extra.txt 里手动加。
+FINANCE_GUARD = [
+    "bank", "boc.", "ccb", "abchina", "icbc", "cmb", "bocm", "psbc", "cebbank",
+    "spdb", "citic", "cib.", "cmbc", "hxb", "pab", "cgbchina", "bankofbeijing",
+    "securities", "stock", "zq.", "gtja", "htsc", "futunn", "eastmoney",
+    "alipay", "tenpay", "unionpay", "paypal", "yiwang", "creditcard",
+]
+
+_UNESCAPE = (("\\/", "/"), ("\\.", "."), ("\\?", "?"), ("\\-", "-"),
+             ("\\_", "_"), ("\\d", "d"), ("\\w", "w"))
+
+
+def _unescape_pattern(pat: str) -> str:
+    out = pat
+    for a, b in _UNESCAPE:
+        out = out.replace(a, b)
+    return out
+
+
+def _hosts_in_pattern(pat: str) -> set[str]:
+    """从匹配模式里提取主机名。`\\/` 和 `\\.` 这类转义要先还原。"""
+    p = _unescape_pattern(pat)
+    return {m.group(1) for m in
+            re.finditer(r"//([a-z0-9][a-z0-9.\-]*\.[a-z]{2,})", p)}
+
+
+def _host_covered(host: str, mitm: set[str]) -> bool:
+    if host in mitm:
+        return True
+    for h in mitm:
+        h = h.strip()
+        if not h:
+            continue
+        if h.startswith("*.") and host.endswith(h[1:]):
+            return True
+        if h.lstrip("-*") == host:
+            return True
+        if "?" in h:                      # 上游用 ? 当单字符通配（如 api*.futunn.com）
+            try:
+                if re.fullmatch(re.escape(h).replace(r"\*", ".*").replace(r"\?", "."), host):
+                    return True
+            except re.error:
+                pass
+    return False
+
+
+def derive_mitm_hosts(sections: dict[str, list[Block]], *,
+                      finance_keywords: list[str] | None = None,
+                      approved: list[str] | None = None
+                      ) -> tuple[list[str], list[tuple[str, str]], dict[str, int]]:
+    """找出"规则要处理、但 MITM 没开启"的主机。
+
+    这是上游一类系统性缺陷的修法：per-App split 文件里写了重写规则，
+    却没把对应主机名声明进 [MITM]（726 个模块里有 50 个中招，共 69 条规则
+    因此永远不会执行）—— 规则看着在，实际一点作用都没有。
+
+    返回（可以补上的主机, [(被金融守卫拦下的主机, 触发词)], 统计）
+    """
+    keywords = finance_keywords or FINANCE_GUARD
+    mitm_mod = Module(sections={"[MITM]": sections.get("[MITM]", [])})
+    existing = set(parse_mitm(mitm_mod))
+    pre_approved = set(approved or [])   # 用户在 config/mitm-extra.txt 里手动放行过的
+
+    needed: set[str] = set()
+    for sec in ("[URL Rewrite]", "[Map Local]", "[Body Rewrite]"):
+        for b in sections.get(sec, []):
+            parts = b.text.split()
+            if parts:
+                needed |= _hosts_in_pattern(parts[0])
+    for b in sections.get("[Script]", []):
+        m = re.search(r"pattern=([^,]+)", b.text)
+        if m:
+            needed |= _hosts_in_pattern(m.group(1).strip('"'))
+
+    add, held = [], []
+    for host in sorted(needed):
+        if _host_covered(host, existing):
+            continue
+        if host in pre_approved:          # 用户已明确同意解密这个主机
+            add.append(host)
+            continue
+        hit = next((k for k in keywords if k in host.lower()), None)
+        if hit:
+            held.append((host, hit))
+        else:
+            add.append(host)
+    stats = {"needed": len(needed), "missing": len(add) + len(held),
+             "added": len(add), "held_finance": len(held)}
+    return add, held, stats
+
+
+def append_mitm(sections: dict[str, list[Block]], hosts: list[str]) -> None:
+    """把主机名追加到模块的 [MITM] 行（保持 %APPEND% 语义）。"""
+    if not hosts:
+        return
+    current = parse_mitm(Module(sections={"[MITM]": sections.get("[MITM]", [])}))
+    merged = list(current) + [h for h in hosts if h not in current]
+    sections["[MITM]"] = [Block("hostname = %APPEND% " + ", ".join(merged), [], "")]
+

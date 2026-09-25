@@ -74,7 +74,8 @@ def raw_url(repo_raw_base: str, path: str) -> str:
 
 def build_app_modules(src_cfg: dict, *, offline: bool, refresh: bool,
                       vendor_map: dict[str, str], repo_url: str,
-                      limit: int | None = None) -> dict:
+                      limit: int | None = None,
+                      approved_mitm: list[str] | None = None) -> dict:
     """生成 per-App 模块。vendor_map 是核心模块已本地化的脚本映射（url -> 相对路径）。"""
     from module import extract_script_path, parse_module, rewrite_script_path
     from util import VENDOR_DIR, write_text
@@ -110,7 +111,7 @@ def build_app_modules(src_cfg: dict, *, offline: bool, refresh: bool,
     out_dir.mkdir(parents=True, exist_ok=True)
     index: list[tuple[str, str, str]] = []
     stats = {"apps": 0, "variants": 0, "downloaded": 0, "reused": 0, "scripts": 0,
-             "script_bytes": 0, "broken": 0}
+             "script_bytes": 0, "broken": 0, "mitm_fixed": 0, "mitm_held": 0}
     new_scripts: dict[str, str] = dict(vendor_map)
 
     for app, variants in sorted(groups.items()):
@@ -169,6 +170,14 @@ def build_app_modules(src_cfg: dict, *, offline: bool, refresh: bool,
             rewritten.append(b)
         if "[Script]" in sections:
             sections["[Script]"] = rewritten
+
+        # 补齐"规则要解密却没声明主机名"的缺陷（上游 50 个模块中招）
+        add_hosts, held_hosts, _ = module_mod.derive_mitm_hosts(
+            sections, approved=approved_mitm or [])
+        if add_hosts:
+            module_mod.append_mitm(sections, add_hosts)
+            stats["mitm_fixed"] += len(add_hosts)
+        stats["mitm_held"] += len(held_hosts)
 
         mitm = module_mod.parse_mitm(
             module_mod.Module(sections={"[MITM]": sections.get("[MITM]", [])}))
