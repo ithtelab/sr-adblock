@@ -384,9 +384,11 @@ def build_module_layer(sources: dict, options: dict, allow, *, offline: bool,
         # 预置名单直接写进 [MITM] 行 —— 用户装上就生效，不依赖他去编辑参数；
         # 末尾留一个 {{{额外排除}}} 占位符，供用户在小火箭里自行追加。
         preset = ",".join(f"-{d}" for d in excl)
+        # 注意花括号数量：小火箭的参数占位符是 {{{名称}}}（三层），
+        # 在 f-string 里每层要写两个，所以是六个。
         sections_excl = {
             "[MITM]": [module_mod.Block(
-                f"hostname = %APPEND% {preset},{{{{额外排除}}}}", [], sid)]
+                f"hostname = %APPEND% {preset},{{{{{{额外排除}}}}}}", [], sid)]
         }
         mitm_excl_path = out_dir / "mitm-exclude.srmodule"
         n = emit_srmodule(
