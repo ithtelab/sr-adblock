@@ -7,6 +7,7 @@
 （构建卡死、KeyError、缓存永不命中、参数占位符失效…）。下面每个用例的注释里
 都写了它对应哪一次踩坑。
 """
+import pathlib
 import sys
 import unittest
 from pathlib import Path
@@ -198,6 +199,73 @@ class RulesetWrappingTests(unittest.TestCase):
 
         self.assertEqual(E._ensure_policy("DOMAIN,a.com,香港节点", "REJECT"),
                          "DOMAIN,a.com,香港节点")
+
+
+class ScriptPinTests(unittest.TestCase):
+    """脚本指纹门禁：上游脚本内容一变就停止发布，等人确认。
+
+    这是本项目唯一防"上游脚本被投毒后静默进入产物"的机制 ——
+    规则错了顶多误拦，脚本被投毒是能读到被解密流量内容的。
+    """
+
+    def test_roundtrip(self):
+        import tempfile
+
+        import pins as P
+
+        with tempfile.TemporaryDirectory() as d:
+            f = pathlib.Path(d) / "script-pins.txt"
+            P.save_pins(f, {"a/b.js": "aaa", "c.js": "bbb"}, built_at="x")
+            self.assertEqual(P.load_pins(f), {"a/b.js": "aaa", "c.js": "bbb"})
+
+    def test_missing_file_is_empty(self):
+        import tempfile
+
+        import pins as P
+
+        with tempfile.TemporaryDirectory() as d:
+            self.assertEqual(P.load_pins(pathlib.Path(d) / "nope.txt"), {})
+
+    def test_detects_added_changed_removed(self):
+        import pins as P
+
+        diff = P.diff_pins({"a.js": "1", "b.js": "2", "gone.js": "3"},
+                           {"a.js": "1", "b.js": "CHANGED", "new.js": "9"})
+        self.assertEqual(diff.changed, ["b.js"])
+        self.assertEqual(diff.added, ["new.js"])
+        self.assertEqual(diff.removed, ["gone.js"])
+        self.assertEqual(diff.unchanged, 1)
+        self.assertTrue(diff.has_changes)
+
+    def test_no_change_is_clean(self):
+        import pins as P
+
+        same = {"a.js": "1", "b.js": "2"}
+        diff = P.diff_pins(same, dict(same))
+        self.assertFalse(diff.has_changes)
+        self.assertEqual(diff.unchanged, 2)
+
+    def test_current_pins_scans_vendor_dir(self):
+        import tempfile
+
+        import pins as P
+
+        with tempfile.TemporaryDirectory() as d:
+            root = pathlib.Path(d)
+            (root / "owner" / "repo" / "main").mkdir(parents=True)
+            (root / "owner" / "repo" / "main" / "x.js").write_text("hi", encoding="utf-8")
+            got = P.current_pins(root)
+            self.assertEqual(list(got), ["owner/repo/main/x.js"])
+            self.assertEqual(got["owner/repo/main/x.js"], P.sha256_file(
+                root / "owner" / "repo" / "main" / "x.js"))
+
+    def test_report_mentions_how_to_accept(self):
+        import pins as P
+
+        diff = P.diff_pins({}, {"a.js": "1"})
+        text = "\n".join(P.changes_report(diff, old_pins={}))
+        self.assertIn("--update-script-pins", text)
+        self.assertIn("跳过发布", text)
 
 
 class AppModuleTests(unittest.TestCase):

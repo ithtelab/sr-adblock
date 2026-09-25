@@ -6,6 +6,11 @@ on:
   schedule:
     - cron: "0 2 * * *"
   workflow_dispatch:
+    inputs:
+      accept_scripts:
+        description: "确认上游脚本变更并更新指纹锁（会提交 config/script-pins.txt）"
+        type: boolean
+        default: false
   push:
     branches: [main]
     paths-ignore:
@@ -54,9 +59,16 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           set +e
-          python src/build.py 2>&1 | tee build.log
+          flags=""
+          if [ "${{ inputs.accept_scripts }}" = "true" ]; then
+            flags="--update-script-pins"
+          fi
+          python src/build.py $flags 2>&1 | tee build.log
           code=${PIPESTATUS[0]}
-          if [ "$code" != "0" ]; then
+          if [ "$code" = "3" ]; then
+            echo "::warning::上游脚本内容有变化，本次跳过发布（用户手上仍是上一版）。确认后到 Actions → build → Run workflow 勾选 accept_scripts"
+            echo "failed=1" >> "$GITHUB_ENV"
+          elif [ "$code" != "0" ]; then
             echo "::error::构建自检未通过，本次不发布产物（保留上一版）"
             echo "failed=1" >> "$GITHUB_ENV"
           fi
@@ -71,7 +83,22 @@ jobs:
             build-report.md
             build-report-scripts.md
             build-report-verify.md
+            build-report-script-changes.md
           if-no-files-found: ignore
+
+      - name: 提交确认后的脚本指纹
+        if: inputs.accept_scripts && env.failed != '1'
+        run: |
+          if git diff --quiet config/script-pins.txt; then
+            echo "指纹无变化，无需提交"
+          else
+            git config user.name "github-actions[bot]"
+            git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+            git add config/script-pins.txt
+            git commit -m "chore: 确认上游脚本变更并更新指纹锁 [skip ci]"
+            git push
+            echo "已提交更新后的指纹"
+          fi
 
       # 只放产物、不放源码：28 万行的域名表每天全量提交，
       # 用单个 orphan 提交强推，避免仓库历史被撑爆。

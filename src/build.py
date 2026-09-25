@@ -168,6 +168,36 @@ def load_mitm_extra() -> list[str]:
     return out
 
 
+def check_script_pins(*, update: bool) -> tuple[bool, str]:
+    """脚本指纹门禁。返回（是否可以发布, 状态说明）。
+
+    上游脚本内容一变就**停止发布**（用户手上继续是上一版），
+    生成变更报告等人确认 —— 因为脚本能读到被解密流量的内容，被投毒后果严重。
+    """
+    import pins as pins_mod
+
+    path = pins_mod.pins_path(ROOT)
+    old = pins_mod.load_pins(path)
+    new = pins_mod.current_pins()
+
+    if not old:
+        pins_mod.save_pins(path, new, built_at=time.strftime("%Y-%m-%d %H:%M"))
+        return True, f"首次建立指纹：{len(new)} 个脚本"
+
+    diff = pins_mod.diff_pins(old, new)
+    if update:
+        pins_mod.save_pins(path, new, built_at=time.strftime("%Y-%m-%d %H:%M"))
+        return True, f"已更新指纹：{diff.summary()}"
+
+    if diff.has_changes:
+        report = ROOT / "build-report-script-changes.md"
+        body = "\n".join(pins_mod.changes_report(diff, old_pins=old))
+        report.write_text(body + "\n", encoding="utf-8")
+        return False, f"{diff.summary()} —— 已生成 {report.name}，本次不发布"
+
+    return True, diff.summary()
+
+
 def load_mitm_exclude() -> list[str]:
     """读 config/mitm-exclude.txt：默认不参与解密的域名（银行/券商/支付/办公）。"""
     path = CONFIG_DIR / "mitm-exclude.txt"
@@ -752,6 +782,15 @@ def write_report(result: dict, options: dict, elapsed: float) -> Path:
         add(f"| dist/module/httpdns.srmodule | {human(result['module']['httpdns_total'])} |")
     add("")
 
+    pins_ok = result.get("pins_ok")
+    if pins_ok is False:
+        add("## ⏸ 脚本变更待确认（本次未发布）")
+        add("")
+        add("上游脚本内容与 `config/script-pins.txt` 不一致，已跳过发布。")
+        add("详情见 `build-report-script-changes.md`。确认后运行 "
+            "`python src/build.py --update-script-pins`。")
+        add("")
+
     if WARNINGS:
         add("## 告警")
         add("")
@@ -820,6 +859,8 @@ def main() -> int:
                     choices=["all", "domain", "module", "conf"])
     ap.add_argument("--offline", action="store_true", help="只用本地缓存")
     ap.add_argument("--refresh", action="store_true", help="强制重新下载上游")
+    ap.add_argument("--update-script-pins", action="store_true",
+                    help="确认上游脚本变更并更新指纹锁（人工确认动作）")
     args = ap.parse_args()
 
     started = time.time()
@@ -842,6 +883,14 @@ def main() -> int:
     if args.layer in ("all", "conf"):
         result["conf"] = build_conf_layer(sources, options, allow, result)
 
+    # 脚本指纹门禁：上游脚本内容变化 → 停止发布，等人确认
+    section("脚本指纹门禁")
+    publish_ok, pins_msg = check_script_pins(update=args.update_script_pins)
+    log(f"  {pins_msg}")
+    result["pins_ok"] = publish_ok
+    if not publish_ok:
+        warn("上游脚本内容有变化，本次跳过发布（用户手上仍是上一版）", "error")
+
     report = write_report(result, options, time.time() - started)
 
     section("产物自检")
@@ -859,6 +908,10 @@ def main() -> int:
     if not ok:
         log("  ❌ 自检发现阻断性问题，构建标记为失败（产物仍已写出，请人工检查）")
         return 1
+    if not publish_ok:
+        log("  ⏸ 脚本有变更待确认 —— 本次不发布。")
+        log("     确认没问题后运行：python src/build.py --update-script-pins")
+        return 3
     return 0
 
 
