@@ -325,6 +325,33 @@ def build_module_layer(sources: dict, options: dict, allow, *, offline: bool,
         log("  ├ 丢弃上游的 #!arguments（它声明的是无人引用的空开关）")
     log(f"  ads-all.srmodule       {human(total):>7} 条  {fmt_size(path.stat().st_size)}")
 
+    # MITM 排除模块（银行/支付类 App 有证书校验，必须让它们不经过解密）
+    # 这个模块不并入主模块：它的作用是"排除"，而且要放在模块列表最下方才生效
+    mitm_excl_path = None
+    for sid, mod in companions.items():
+        if "anti-mitm" not in sid.lower():
+            continue
+        desc = mod.meta.get("arguments-desc", "").replace("\n", " / ")
+        mitm_excl_path = out_dir / "mitm-exclude.srmodule"
+        n = emit_srmodule(
+            mitm_excl_path, mod.sections,
+            name="MITM 排除解密（银行/证书校验类 App 用）",
+            desc=("把不该解密的域名从这里加进去。装在小火箭模块列表的最下方；"
+                  "被排除的域名不做 HTTPS 解密，因此去广告对它们无效，但 App 能正常用"),
+            author="LOWERTOP（本仓库仅重新发布并补充说明）",
+            homepage=options.get("repo_url", "").split("/re", 1)[0],
+            icon=mod.meta.get("icon", ""),
+            arguments=mod.meta.get("arguments", ""),
+            extra_meta={"arguments-desc": mod.meta.get("arguments-desc", "")},
+            provenance=["LOWERTOP/Shadowrocket-First • Anti-MITM.sgmodule"],
+            counts=[("参数", "2 个（在主界面「编辑参数」里填）")],
+            usage=["装在小火箭的模块列表【最下方】",
+                   "在模块的「编辑参数」里填写要排除解密的主机名，格式如 -www.example.com",
+                   "典型用途：银行 App、有证书固定的 App 报错或无法登录时"],
+        )
+        log(f"  mitm-exclude.srmodule  {human(n)} 条  "
+            f"{fmt_size(mitm_excl_path.stat().st_size)}（排除解密，需放在模块列表最下方）")
+
     # HTTPDNS 配套模块：剔除与主模块重复的条目，避免两份规则打架/冗余
     httpdns_path = None
     httpdns_total = 0
@@ -392,6 +419,7 @@ def build_module_layer(sources: dict, options: dict, allow, *, offline: bool,
             "app_stats": app_stats, "allow_dropped": allow_dropped,
             "rep": rep, "mitm": mitm_count, "path": path, "total": total,
             "httpdns_path": httpdns_path, "httpdns_total": httpdns_total,
+            "mitm_excl_path": mitm_excl_path,
             "httpdns_dropped": httpdns_dropped, "scripts": script_stats,
             "script_urls": script_urls, "rewritten": rewritten,
             "infos": infos, "src_names": src_names, "junk": junk,

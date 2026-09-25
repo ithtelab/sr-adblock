@@ -54,7 +54,7 @@
 | --- | --- |
 | `ruleset/ad-domain-lite.list` | 只收录**被 2 个以上独立上游都认定**的广告域名（6 万条，是全量的 1/5）。怕误杀就用它替换 `ad-domain.list` |
 | `module/apps/*.srmodule` | 726 个 per-App 模块。某个 App 出问题时单独停用它，不用整体关掉去广告；也可以**只装你在意的几个 App**，MITM 主机名最少、最省电 |
-| `module/anti-mitm` 思路 | 银行等有证书校验的 App：不是加白名单，而是**不让它走解密**（见 `config/sources.yaml` 的 `lowertop-anti-mitm`） |
+| `module/mitm-exclude.srmodule` | **银行 / 有证书校验的 App 报错或登录不了时**：装在小火箭模块列表**最下方**，在它的「编辑参数」里填 `-要排除的域名`（如 `-www.example.com`）。被排除的域名不做解密，去广告对它无效但 App 能正常用 |
 | `conf/private.example.conf` | 私人覆盖怎么写（不想每次被上游更新覆盖自己的规则时看它） |
 
 小火箭会自动更新这些订阅（模块默认 1–7 天，配置同理）。
