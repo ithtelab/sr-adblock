@@ -1,0 +1,77 @@
+# 来源、署名与许可
+
+本项目是一套**规则整合与构建工具**（sr-adblock-factory）。
+它自己不生产规则，只是把上游开源项目的规则抓下来、去重、修正、整合成
+小火箭可直接使用的产物。以下逐源说明出处与许可。
+
+**重要**：本仓库不含任何节点、订阅、密码等账号信息。产物里只有规则。
+
+---
+
+## 一、域名层来源
+
+| 来源 | 项目 | 许可 | 本项目如何使用 |
+| --- | --- | --- | --- |
+| blackmatrix7 | https://github.com/blackmatrix7/ios_rule_script | **GPL-2.0** | 取其 `rule/Shadowrocket/Advertising/Advertising_Domain.list` 作为广告域名主体。该项目的 `rewrite/` 目录自 2025 年底已停止更新，本项目**不使用**其中的重写规则 |
+| Johnshall | https://github.com/Johnshall/Shadowrocket-ADBlock-Rules-Forever | **CC-BY-SA-4.0** | 取其 `release/sr_ad_only.conf` 的 [Rule] 段。该项目由 h2y/Shadowrocket-ADBlock-Rules 衍生而来 |
+| fmz200（奶思 / 可莉） | https://github.com/fmz200/wool_scripts | 未声明 | 取其 `Loon/rule/rejectAd.list` 的域名部分 |
+| iab0x00 | https://github.com/iab0x00/ProxyRules | 无许可证文件 | 取其 `Rule/Block.txt`。**仅使用规则条目，不镜像其原始文件** |
+| LOWERTOP | https://github.com/LOWERTOP/Shadowrocket-First | 未声明 | 取其 `AntiAD.list`。该文件里被作者注释掉的规则（作者标注为会导致功能异常）已整理进本项目的 `config/allowlist.txt` |
+
+## 二、模块层来源
+
+| 来源 | 项目 | 许可 | 本项目如何使用 |
+| --- | --- | --- | --- |
+| fmz200（奶思 / 可莉） | https://github.com/fmz200/wool_scripts | 未声明 | 主体模块：`Shadowrocket/module/blockAds.srmodule`（主来源）、`Surge/module/blockAds.module`（用于补齐 SR 版缺失的规则）、`Loon/plugin/blockAdsV2.plugin`（仅读其 [Argument] 段补全参数声明） |
+| 可莉🅥 / VirgilClyne | `luestr/ProxyResource`（经 fmz200 镜像为 `blockHTTPDNS`） | 未声明 | HTTPDNS 拦截模块 |
+| iab0x00 | https://github.com/iab0x00/ProxyRules | 无许可证文件 | per-App 重写模块：RedBook / WeiboIntl / BiliIntlClean / DiDiClean |
+| LOWERTOP | https://github.com/LOWERTOP/Shadowrocket-First | 未声明 | `Cleaner.module`、`Anti-MITM.sgmodule` |
+| fmz200（奶思 / 可莉） | https://github.com/fmz200/wool_scripts | 未声明 | per-App 模块来自 `Surge/module/split/**`（731 个文件） |
+
+### 第三方脚本（vendor/ 目录）
+
+被本地化到 `vendor/` 的 JS 脚本分别来自以下作者与项目，
+路径中保留了原始出处（`vendor/<owner>/<repo>/<ref>/<原路径>`）：
+
+- `fmz200/wool_scripts`（本模块主体）
+- `zirawell/R-Store`
+- `ishowshu/qx`
+- `Keywos/rule`
+- `app2smile/rules`
+- `kokoryh/Sparkle`、`kokoryh/Script`
+- `NobyDa/Script`
+- `Sliverkiss/QuantumultX`
+- `VenenoSix24/Ivy-Script`
+- `001ProMax/Surge`
+- `zZPiglet/Task`
+- `Maasea/sgmodule`
+- `RavelloH`（Reddit 翻译脚本，gist）
+- 以及可莉模块内注释标注的其他贡献者
+
+原则：**保留原作者署名与出处路径**，不做改写，只在必要时修正小火箭不兼容的写法
+（修正内容会在构建报告里列出）。如果你的作品不希望被本项目引用，请提 issue，我会移除。
+
+## 三、配置层来源
+
+`dist/conf/base.conf` 的分流分组结构（地区组用 `policy-regex-filter` 按节点名
+自动归类、服务分组的组织方式）参考自：
+
+- LOWERTOP，https://github.com/LOWERTOP/Shadowrocket（`lazy.conf` / `lazy_group.conf`，未声明许可）
+
+`base.conf` 里引用的分流规则集来自 blackmatrix7（GPL-2.0），
+引用方式是**远程订阅**，不复制其内容到本仓库。
+
+## 四、本项目的代码
+
+`src/` 下的构建工具为本项目原创，采用 MIT 许可证（见 LICENSE）。
+
+## 五、免责声明
+
+- 本项目仅供个人学习与自用。
+- 规则整合后会与原上游产生差异，**请勿将本项目的产物当成上游官方发布**；
+  发现问题请先在本仓库排查，确认是上游问题时再反馈给对应上游。
+- 任何规则集都存在误杀可能。请以 `config/allowlist.txt` 为主要手段修正，
+  并把你的修正贡献回来。
+- 使用 MITM（HTTPS 解密）意味着你的部分流量会经过小火箭解密。
+  这是去广告类规则的固有代价，请自行评估风险，不要在涉及支付、
+  医疗、工作机密的场景下开启不必要的解密。

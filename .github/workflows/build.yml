@@ -1,0 +1,103 @@
+name: build
+
+# 每天北京时间 10:00 重建（UTC 02:00）。
+# 比 Johnshall 的 8:00 晚两小时 —— 要等它先更新完，否则我们永远拿到前一天的数据。
+on:
+  schedule:
+    - cron: "0 2 * * *"
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths-ignore:
+      - "**.md"
+      - "NOTICE"
+      - "LICENSE"
+
+permissions:
+  contents: write
+
+concurrency:
+  group: build
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: 安装依赖
+        run: pip install -r requirements.txt
+
+      # 缓存上游原始文件：配合构建里的 ETag 条件请求，
+      # 没变的上游只返回 304，每天的重建就从"下载 30MB"变成"几十个空响应"。
+      - name: 恢复上游缓存
+        uses: actions/cache@v4
+        with:
+          path: cache
+          key: sr-adblock-cache-${{ github.run_id }}
+          restore-keys: |
+            sr-adblock-cache-
+
+      - name: 构建
+        id: build
+        env:
+          # 用 token 调 GitHub API 取上游文件树（匿名限额 60 次/小时，
+          # Actions 出口 IP 是共享的，很容易被别的任务用光）
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set +e
+          python src/build.py 2>&1 | tee build.log
+          code=${PIPESTATUS[0]}
+          if [ "$code" != "0" ]; then
+            echo "::error::构建自检未通过，本次不发布产物（保留上一版）"
+            echo "failed=1" >> "$GITHUB_ENV"
+          fi
+
+      - name: 上传构建报告（无论成败）
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: build-reports
+          path: |
+            build.log
+            build-report.md
+            build-report-scripts.md
+            build-report-verify.md
+          if-no-files-found: ignore
+
+      # 只放产物、不放源码：28 万行的域名表每天全量提交，
+      # 用单个 orphan 提交强推，避免仓库历史被撑爆。
+      - name: 发布产物到 release 分支
+        if: env.failed != '1'
+        run: |
+          set -e
+          pub=$(mktemp -d)
+          mkdir -p "$pub/vendor"
+          cp -r dist/. "$pub/"
+          [ -d vendor ] && cp -r vendor/. "$pub/vendor/" || true
+          cp NOTICE README.md "$pub/" 2>/dev/null || true
+          for f in build-report.md build-report-scripts.md build-report-verify.md; do
+            [ -f "$f" ] && cp "$f" "$pub/" || true
+          done
+          printf '%s\n' \
+            "# 发布分支（自动生成，勿手改）" "" \
+            "本分支只放构建产物。源码与配置在 main 分支。" "" \
+            "生成时间：$(date -u '+%Y-%m-%d %H:%M:%S UTC')" \
+            "触发起因：${{ github.event_name }}" > "$pub/RELEASE-README.md"
+
+          cd "$pub"
+          git init -q
+          git checkout -q -b release
+          git add -A
+          git -c user.name="github-actions[bot]" \
+              -c user.email="41898282+github-actions[bot]@users.noreply.github.com" \
+              commit -q -m "build: $(date -u '+%Y-%m-%d %H:%M') UTC"
+          git push -f -q \
+            "https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git" \
+            release
+          echo "已发布到 release 分支"

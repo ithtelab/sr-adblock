@@ -1,0 +1,15 @@
+# 构建输出与缓存，不入库（产物会发布到 release 分支）
+cache/
+dist/
+vendor/
+__pycache__/
+*.pyc
+build-report.md
+build-report-scripts.md
+build-report-verify.md
+.venv/
+
+# 编辑器/工具的内部文件，不属于项目内容
+.zcode/
+.vscode/
+.idea/

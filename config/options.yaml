@@ -1,0 +1,31 @@
+# ============================================================================
+#  构建选项
+# ============================================================================
+
+output:
+  # 产物文件名前缀。最终文件名形如 ad-domain.list / ad-rule.list
+  prefix: ad
+  # 是否额外产出 lite 精简版（高置信子集，给"怕误杀"的场景）
+  lite: true
+  # lite 的门槛：至少被几个独立来源收录才算高置信
+  lite_min_sources: 2
+  # 是否产出域名来源对照表（cache/attribution.tsv，用于排查误杀时回溯）
+  attribution: true
+
+domain_layer:
+  # 父域压缩：删掉被上层后缀覆盖的冗余子域条目
+  compress: true
+  # 把"精确匹配"一律提升为"含子域匹配"（拦截更狠、体积更小，但误杀风险上升）
+  # 默认关闭 —— 尊重上游的精确/后缀语义区分
+  promote_exact_to_suffix: false
+
+module_layer:
+  # 把第三方脚本抓到本仓库 vendor/ 下（避免上游删库导致规则静默失效）
+  vendor_scripts: true
+  # 扫描脚本里小火箭不支持的 API（$httpAPI / $task / $loon）
+  scan_incompatible_api: true
+  # MITM 主机名超过这个数量就告警（小火箭在 iOS 15 以下内存预算只有 15MB）
+  mitm_warn_threshold: 1000
+
+# 构建产物的订阅根地址（Phase 5 建仓后改成你的仓库地址）
+repo_url: https://raw.githubusercontent.com/ithtelab/sr-adblock/release

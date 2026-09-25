@@ -1,0 +1,153 @@
+# ============================================================================
+#  上游来源声明
+#  改这里就能增删规则来源，不用动代码。
+#
+#  format 字段说明：
+#    domain_set        —— 纯域名表；裸域名 = 精确匹配，前导点(.foo.com) = 含子域匹配
+#    ruleset           —— "类型, 值" 的规则集（无策略列），如 "DOMAIN-SUFFIX, ad.com"
+#    surge_conf_rules  —— Surge/SR 配置文件，取 [Rule] 段（含策略列，如 ",Reject"）
+#
+#  trust 字段：用于 lite 精简版。出现在 >=2 个独立来源的域名才算"高置信"。
+#              同一个来源内部重复不算，所以 trust=false 的来源不计入置信度统计
+#              （例如某来源本身就是另一个来源的搬运）。
+# ============================================================================
+
+domain_sources:
+
+  - id: blackmatrix7
+    name: blackmatrix7 • Advertising 广告规则集
+    url: https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/master/rule/Shadowrocket/Advertising/Advertising_Domain.list
+    format: domain_set
+    trust: true
+    repo: https://github.com/blackmatrix7/ios_rule_script
+    license: GPL-2.0
+    note: >
+      全网最大的广告域名表（28 万条）。它自己的 rewrite/ 目录自 2025 年底已冻结，
+      本项目只取它的 rule/ 域名层。生成器闭源，无法自建，只能消费产物。
+
+  - id: johnshall
+    name: Johnshall • 仅去广告规则（每日 8:00 重建）
+    url: https://raw.githubusercontent.com/Johnshall/Shadowrocket-ADBlock-Rules-Forever/release/sr_ad_only.conf
+    format: surge_conf_rules
+    only: [DOMAIN-SUFFIX, IP-CIDR]
+    trust: true
+    repo: https://github.com/Johnshall/Shadowrocket-ADBlock-Rules-Forever
+    license: CC-BY-SA-4.0
+    note: >
+      注意：必须取 release 分支的产物。build 分支里的 factory/resultant/ad.list
+      已冻结在 2025-02-08（不是当前数据）。它由 EasyList China、乘风规则、
+      Peter Lowe 等源每日生成。
+
+  - id: fmz200
+    name: 可莉/奶思 • rejectAd 去广告列表
+    url: https://raw.githubusercontent.com/fmz200/wool_scripts/main/Loon/rule/rejectAd.list
+    format: ruleset
+    trust: true
+    repo: https://github.com/fmz200/wool_scripts
+    license: 未声明
+    note: 可莉模块的域名层子集，与上面的 blockAds 模块同源，便于保持两层一致。
+
+  - id: iab0x00
+    name: iab0x00 • Block 轻量去广告
+    url: https://raw.githubusercontent.com/iab0x00/ProxyRules/main/Rule/Block.txt
+    format: ruleset
+    trust: true
+    repo: https://github.com/iab0x00/ProxyRules
+    license: 无许可证
+    note: 轻量精选名单（约 1100 条）。注意该仓库内容在 main 分支，master 只有 README。
+
+  - id: lowertop
+    name: LOWERTOP • AntiAD 自用去广告
+    url: https://raw.githubusercontent.com/LOWERTOP/Shadowrocket-First/main/AntiAD.list
+    format: ruleset
+    trust: true
+    repo: https://github.com/LOWERTOP/Shadowrocket-First
+    license: 未声明
+    note: 作者自用小名单，含注释说明了每条规则的用途，误杀修正很有参考价值。
+
+# ---------------------------------------------------------------------------
+# 模块层来源（Phase 2 使用）
+# ---------------------------------------------------------------------------
+module_sources:
+
+  - id: fmz200-blockAds
+    name: 可莉/奶思 • 广告拦截&净化合集
+    url: https://raw.githubusercontent.com/fmz200/wool_scripts/main/Shadowrocket/module/blockAds.srmodule
+    role: core
+    license: 未声明
+    note: >
+      小火箭原生构建。注意它比同目录的 Surge 版少 9 条规则（CSDN/财新的部分域名），
+      合并时会用 Surge 版补齐。它本身是 731 个 per-App 模块的合并产物，
+      合并脚本带 bug，产生了 184 条重复规则，需要去重。
+
+  - id: fmz200-blockAds-surge
+    name: 可莉/奶思 • 广告拦截&净化合集（Surge 版，用于补齐）
+    url: https://raw.githubusercontent.com/fmz200/wool_scripts/main/Surge/module/blockAds.module
+    role: reference
+    license: 未声明
+    note: 只用来补齐 SR 版缺失的规则，不直接输出。
+
+  - id: fmz200-blockAdsV2
+    name: 可莉/奶思 • 广告拦截&净化合集（Loon Rewrite V2 版）
+    url: https://raw.githubusercontent.com/fmz200/wool_scripts/main/Loon/plugin/blockAdsV2.plugin
+    role: args_ref
+    license: 未声明
+    note: >
+      只用来读它的 [Argument] 段（74 条参数声明）。SR/Surge 版模块里脚本引用了 8 个
+      参数占位符却没声明，这个文件是唯一能找到默认值的地方。
+      绝不合并它的内容 —— [Rewrite] 是 Loon 专有段落，混进小火箭会出问题。
+
+  - id: fmz200-httpdns
+    name: 可莉/奶思 • HTTPDNS 拦截器
+    url: https://raw.githubusercontent.com/fmz200/wool_scripts/main/Shadowrocket/module/blockHTTPDNS.srmodule
+    role: companion
+    license: 未声明
+    note: >
+      上游实为 luestr/ProxyResource 的 Loon 插件镜像，最后更新 2025-05，已冻结。
+      与 blockAds 有 19 条重复规则 + 1 个重复 MITM 主机名，合并时去重。
+
+  - id: iab0x00-redbook
+    name: iab0x00 • 小红书去广告
+    url: https://raw.githubusercontent.com/iab0x00/ProxyRules/main/Rewrite/RedBook.srmodule
+    role: app
+    license: 无许可证
+  - id: iab0x00-weibo-intl
+    name: iab0x00 • 微博国际版净化
+    url: https://raw.githubusercontent.com/iab0x00/ProxyRules/main/Rewrite/WeiboIntl.sgmodule
+    role: app
+    license: 无许可证
+  - id: iab0x00-bili-intl
+    name: iab0x00 • B站国际版净化
+    url: https://raw.githubusercontent.com/iab0x00/ProxyRules/main/Rewrite/BiliIntlClean.sgmodule
+    role: app
+    license: 无许可证
+  - id: iab0x00-didi
+    name: iab0x00 • 滴滴净化
+    url: https://raw.githubusercontent.com/iab0x00/ProxyRules/main/Rewrite/DiDiClean.sgmodule
+    role: app
+    license: 无许可证
+
+  - id: lowertop-cleaner
+    name: LOWERTOP • Cleaner 综合净化
+    url: https://raw.githubusercontent.com/LOWERTOP/Shadowrocket-First/main/Cleaner.module
+    role: app
+    license: 未声明
+
+  - id: lowertop-anti-mitm
+    name: LOWERTOP • Anti-MITM 排除名单
+    url: https://raw.githubusercontent.com/LOWERTOP/Shadowrocket-First/main/Anti-MITM.sgmodule
+    role: companion
+    license: 未声明
+    note: 用于把不该解密的域名（银行、证书固定类）排除出去，建议装。
+
+# ---------------------------------------------------------------------------
+# per-App 可选模块来源（Phase 2 使用）
+# ---------------------------------------------------------------------------
+app_module_source:
+  # 可莉的 split 目录是小火箭/各客户端通用的 per-App 模块，结构为
+  # Surge/module/split/part<字母>/<AppName>.sgmodule
+  # 我们取 Surge 版（比 SR 版多 9 条规则），转换后输出为 .srmodule
+  raw_base: https://raw.githubusercontent.com/fmz200/wool_scripts/main
+  list_api: https://api.github.com/repos/fmz200/wool_scripts/git/trees/main?recursive=1
+  path_prefix: Surge/module/split/
+  path_suffix: .sgmodule
