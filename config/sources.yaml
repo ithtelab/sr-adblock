@@ -144,6 +144,19 @@ module_sources:
 # per-App 可选模块来源（Phase 2 使用）
 # ---------------------------------------------------------------------------
 app_module_source:
+  # ⚠ 已知的上游缺陷（本项目会自动修一部分，剩下的见下）：
+  #
+  # 1. 【已自动修复】50 个模块的重写规则要解密某个主机，却没把主机名声明进
+  #    [MITM]，规则永远不执行。构建时从规则模式反推补齐（金融类受守卫保护，见
+  #    options.yaml 的 derive_mitm_hosts 与 config/mitm-extra.txt）。
+  #
+  # 2. 【无法自动判断，仅记录】东方财富的模块 split/partD/DongFangCaiFu.sgmodule
+  #    里混进了"东方航空"的规则：它的 [MITM] 写的是 app.ceair.com，
+  #    还带两条 app.ceair.com 的 Map Local —— 两个 App 中文名都叫"东方X"，
+  #    上游大概率因此复制错了文件。后果是该模块里唯一那条东方财富重写规则
+  #    （emdcadvertise.eastmoney.com）永远不会触发；而装了它会去解密东方航空的域名。
+  #    同时注意：东方航空没有单独的模块，它的规则只存在于这个文件里，所以
+  #    不能简单删掉。东方财富的开屏广告实际由域名层覆盖，不受影响。
   # 可莉的 split 目录是小火箭/各客户端通用的 per-App 模块，结构为
   # Surge/module/split/part<字母>/<AppName>.sgmodule
   # 我们取 Surge 版（比 SR 版多 9 条规则），转换后输出为 .srmodule
