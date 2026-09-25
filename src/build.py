@@ -168,6 +168,19 @@ def load_mitm_extra() -> list[str]:
     return out
 
 
+def load_mitm_exclude() -> list[str]:
+    """读 config/mitm-exclude.txt：默认不参与解密的域名（银行/券商/支付/办公）。"""
+    path = CONFIG_DIR / "mitm-exclude.txt"
+    if not path.exists():
+        return []
+    out = []
+    for line in read_text(path).splitlines():
+        s = line.split("#", 1)[0].strip()
+        if s:
+            out.append(s)
+    return out
+
+
 def build_module_layer(sources: dict, options: dict, allow, *, offline: bool,
                        refresh: bool) -> dict:
     """模块层：合并去广告模块、本地化脚本、产出小火箭原生模块。"""
@@ -364,29 +377,48 @@ def build_module_layer(sources: dict, options: dict, allow, *, offline: bool,
     # MITM 排除模块（银行/支付类 App 有证书校验，必须让它们不经过解密）
     # 这个模块不并入主模块：它的作用是"排除"，而且要放在模块列表最下方才生效
     mitm_excl_path = None
+    excl = load_mitm_exclude()
     for sid, mod in companions.items():
         if "anti-mitm" not in sid.lower():
             continue
-        desc = mod.meta.get("arguments-desc", "").replace("\n", " / ")
+        # 预置名单直接写进 [MITM] 行 —— 用户装上就生效，不依赖他去编辑参数；
+        # 末尾留一个 {{{额外排除}}} 占位符，供用户在小火箭里自行追加。
+        preset = ",".join(f"-{d}" for d in excl)
+        sections_excl = {
+            "[MITM]": [module_mod.Block(
+                f"hostname = %APPEND% {preset},{{{{额外排除}}}}", [], sid)]
+        }
         mitm_excl_path = out_dir / "mitm-exclude.srmodule"
         n = emit_srmodule(
-            mitm_excl_path, mod.sections,
-            name="MITM 排除解密（银行/证书校验类 App 用）",
-            desc=("把不该解密的域名从这里加进去。装在小火箭模块列表的最下方；"
-                  "被排除的域名不做 HTTPS 解密，因此去广告对它们无效，但 App 能正常用"),
-            author="LOWERTOP（本仓库仅重新发布并补充说明）",
+            mitm_excl_path, sections_excl,
+            name="MITM 排除解密（银行 / 券商 / 支付 / 办公）",
+            desc=(f"已预置 {len(excl)} 个银行/券商/支付/办公域名，装到模块列表最下方即生效；"
+                  f"被排除的域名不做 HTTPS 解密，所以 App 不会因证书校验异常，"
+                  f"（代价：依赖解密的重写类去广告对它们无效，域名层拦截不受影响）"),
+            author="LOWERTOP 原始模块 / sr-adblock-factory 预置名单并改为默认生效",
             homepage=options.get("repo_url", "").split("/re", 1)[0],
             icon=mod.meta.get("icon", ""),
-            arguments=mod.meta.get("arguments", ""),
-            extra_meta={"arguments-desc": mod.meta.get("arguments-desc", "")},
-            provenance=["LOWERTOP/Shadowrocket-First • Anti-MITM.sgmodule"],
-            counts=[("参数", "2 个（在主界面「编辑参数」里填）")],
-            usage=["装在小火箭的模块列表【最下方】",
-                   "在模块的「编辑参数」里填写要排除解密的主机名，格式如 -www.example.com",
-                   "典型用途：银行 App、有证书固定的 App 报错或无法登录时"],
+            arguments="额外排除:无",
+            extra_meta={
+                "arguments-desc": (
+                    "已预置常见银行/券商/支付/办公域名（见仓库 config/mitm-exclude.txt），"
+                    "\\n\\n这里的「额外排除」用来临时加更多，格式：-域名，多个用英文逗号分隔，"
+                    "例如 -mybank.com,-mycompany.com"
+                    "\\n\\n要取消某个 App 的排除（让它的去广告生效），"
+                    "把它的域名从 config/mitm-exclude.txt 里删掉后重新构建。"
+                ),
+            },
+            provenance=["LOWERTOP/Shadowrocket-First • Anti-MITM.sgmodule",
+                        f"预置名单 {len(excl)} 条，来自本仓库 config/mitm-exclude.txt"],
+            counts=[("预置排除域名", human(len(excl))),
+                    ("额外排除", "1 个参数（在「编辑参数」里填）")],
+            usage=["★ 装在小火箭的模块列表【最下方】（顺序不对可能不生效）",
+                   "装完什么都不用填，预置的银行/券商/支付/办公域名就已经被排除解密",
+                   "要临时再加：点模块的「编辑参数」，填 -域名（多个用英文逗号分隔）"],
         )
         log(f"  mitm-exclude.srmodule  {human(n)} 条  "
-            f"{fmt_size(mitm_excl_path.stat().st_size)}（排除解密，需放在模块列表最下方）")
+            f"{fmt_size(mitm_excl_path.stat().st_size)}"
+            f"（预置 {len(excl)} 个排除域名，需放在模块列表最下方）")
 
     # HTTPDNS 配套模块：剔除与主模块重复的条目，避免两份规则打架/冗余
     httpdns_path = None
@@ -458,7 +490,7 @@ def build_module_layer(sources: dict, options: dict, allow, *, offline: bool,
             "mitm_approved": approved,
             "rep": rep, "mitm": mitm_count, "path": path, "total": total,
             "httpdns_path": httpdns_path, "httpdns_total": httpdns_total,
-            "mitm_excl_path": mitm_excl_path,
+            "mitm_excl_path": mitm_excl_path, "mitm_excluded": excl,
             "httpdns_dropped": httpdns_dropped, "scripts": script_stats,
             "script_urls": script_urls, "rewritten": rewritten,
             "infos": infos, "src_names": src_names, "junk": junk,

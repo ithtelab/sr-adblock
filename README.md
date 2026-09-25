@@ -199,7 +199,7 @@ RULE-SET,https://raw.githubusercontent.com/ithtelab/sr-adblock/release/ruleset/a
 | `ruleset/ad-rule.list` | 387 | IP / 关键词 / 正则类规则，域名表放不下这些，两个要一起引用 |
 | `module/ads-all.srmodule` | 4,504 | 去广告总模块。**日常只装这一个**，不要叠加别的去广告模块 |
 | `module/httpdns.srmodule` | 161 | 阻止 App 绕过代理自己解析域名。**必需配套**，已剔除与总模块的重复 |
-| `module/mitm-exclude.srmodule` | — | 银行 / 有证书校验的 App 报错时用。装在模块列表**最下方**，在「编辑参数」里填 `-要排除的域名` |
+| `module/mitm-exclude.srmodule` | 预置 45 个 | **银行 / 券商 / 支付 / 办公 App 一律装它**（已预置域名，装上就生效，装在模块列表**最下方**）。要加自己的在「编辑参数」里填 `-域名` |
 | `module/apps/*.srmodule` | 726 个 | per-App 模块。**只装你在意的几个 App**，MITM 主机名最少、最省电 |
 | `conf/base.conf` | — | 配置骨架：代理分组 + 分流 + 引用上面两层 |
 | `conf/private.example.conf` | — | 私人覆盖怎么写（不想每次被上游更新覆盖自己的规则时看它） |
