@@ -60,6 +60,21 @@
 小火箭会自动更新这些订阅（模块默认 1–7 天，配置同理）。
 **前提**：iOS「设置 → 通用 → 后台 App 刷新」要对小火箭开启。
 
+### 如果 raw 链接拉不动（国内网络常见）
+
+`raw.githubusercontent.com` 在国内经常连不上或时断时续。两种办法：
+
+1. **让小火箭自己走代理去拉**（推荐）：小火箭请求规则集 URL 时本来就会走它自己的隧道，
+   只要你的节点是通的，一般都能拉到。加载失败时在「配置 → 规则集URL」里点重新下载即可。
+2. **换镜像地址**：把链接里的
+   `raw.githubusercontent.com/ithtelab/sr-adblock/release/`
+   替换成 `cdn.jsdelivr.net/gh/ithtelab/sr-adblock@release/`，例如
+   ```
+   https://cdn.jsdelivr.net/gh/ithtelab/sr-adblock@release/ruleset/ad-domain.list
+   ```
+   注意 jsDelivr 有缓存延迟（通常几小时），更新不如 raw 及时；
+   也可以在 `config/options.yaml` 里把 `repo_url` 改成你常用的镜像前缀，让产物里的说明跟着变。
+
 ---
 
 ## 三、出问题了怎么办
