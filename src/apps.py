@@ -41,8 +41,24 @@ def fetch_tree(api_url: str, *, offline: bool = False, refresh: bool = False) ->
     if token:
         headers["Authorization"] = f"Bearer {token}"
     req = urllib.request.Request(api_url, headers=headers)
-    with urllib.request.urlopen(req, timeout=60) as resp:
-        data = json.loads(resp.read().decode("utf-8"))
+    try:
+        with urllib.request.urlopen(req, timeout=60) as resp:
+            data = json.loads(resp.read().decode("utf-8"))
+    except Exception as exc:  # noqa: BLE001
+        # 限流（匿名 60 次/小时）或网络故障都不该让整个构建失败：
+        # 有缓存就用缓存（per-App 模块可能稍旧），没缓存就跳过这一层。
+        warn(f"取上游文件树失败（{type(exc).__name__}: {exc}）", "warn")
+        if TREE_CACHE.exists():
+            try:
+                cached = json.loads(TREE_CACHE.read_text(encoding="utf-8"))
+                if cached.get("tree"):
+                    warn(f"已回退到 {cached.get('fetched_at')} 缓存的文件树"
+                         f"（{len(cached['tree'])} 项）", "info")
+                    return cached["tree"]
+            except json.JSONDecodeError:
+                pass
+        return []
+
     tree = data.get("tree", [])
     CACHE_DIR.mkdir(parents=True, exist_ok=True)
     TREE_CACHE.write_text(json.dumps({"url": api_url, "fetched_at": time.strftime("%Y-%m-%d %H:%M:%S"),

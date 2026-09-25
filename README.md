@@ -228,6 +228,38 @@ RULE-SET,https://raw.githubusercontent.com/ithtelab/sr-adblock/release/ruleset/a
 
 ---
 
+## 🧩 额外可选模块（非去广告）
+
+这些是**额外功能**，不属于上面那三层，按需单独导入。
+它们和主模块一样做了脚本本地化、MITM 主机名补全、脏数据校验，
+并**保留了上游的参数声明**（参数就是你在小火箭里配置它们的界面）。
+
+索引（含每个模块的条目数/脚本数/说明，每次构建自动更新）：
+**[`dist/module/extra/README.md`](https://raw.githubusercontent.com/ithtelab/sr-adblock/release/module/extra/README.md)**
+
+| 分组 | 模块 | 说明 |
+| :-- | :-- | :-- |
+| **证书 / 安全** | `ca-module` | ★ **换配置不再掉解密**。小火箭的 HTTPS 解密是跟配置走的，换一次就要重开一次；装了它把证书填进参数，解密状态跟着模块走 |
+| | `vpn-detected` | 让 App 检测不到你在用代理（很多国内 App 会因为代理检测报错） |
+| **GitHub 体验包** | `github-pro` | 私有库/大文件加速。**14 个参数，装完要按需填写** |
+| | `github-cdn` | 把 `raw.githubusercontent.com` 的请求 302 到国内可用的 jsDelivr 镜像。**国内刚需** |
+| | `github-no-zoom` | 手机上逛 GitHub 禁止页面缩放 |
+| **插件生态** | `plugin2rocket` | ★ 打通另一个生态：把「可莉插件中心」的 Loon 插件在手机上**实时转成小火箭模块**。已内嵌 Script-Hub，无需额外依赖 |
+| | `plugin-hub2rocket` | 上面那个的精简版，**需要先装 Script-Hub**。两个别同时装 |
+| **境外卡 / WiFi Calling** | `wificalling-hk` / `wificalling-uk` / `wificalling-us` | 香港/英国/美国 SIM 卡的 Wi-Fi Calling 规则，模块内自带自动匹配该国节点的策略组 |
+| | `talkatone` | Talkatone 保号与通话优化 |
+| | `ultramobile-wificalling` | Ultra Mobile 的 Wi-Fi Calling |
+| **单 App 增强** | `youtube-noad` | YouTube 去广告（纯 JS 实现，主模块里没有） |
+| | `hongguo` / `luckin` / `spotify` / `deepseek` | 红果短剧 / 瑞幸 / Spotify / DeepSeek 的净化与增强 |
+| | `cmcc-itv` | 咪咕直播源（看电视直播），它引用的外部规则集已一并本地化 |
+| | `netinfo` | 在 App 内查看当前出口 IP / 节点信息，排查网络时有用 |
+| **系统** | `no-ota` | ★ **屏蔽 iOS 系统更新提示** —— 去掉「设置」上的小红点和自动下载。想升级系统时停用它即可 |
+
+> 这些模块的作者、来源与许可逐条写在 [NOTICE](NOTICE) 里。
+> 它们来自 LOWERTOP、iab0x00、可莉等上游项目，本项目只做本地化与整合。
+
+---
+
 ## 🩺 出问题了怎么办
 
 ### 某个 App 功能异常 / 图片裂 / 打不开

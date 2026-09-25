@@ -500,6 +500,38 @@ def build_module_layer(sources: dict, options: dict, allow, *, offline: bool,
             "unresolved_args": unresolved_args}
 
 
+def build_extra_layer(sources: dict, options: dict, *, offline: bool,
+                      refresh: bool, module_result: dict) -> dict:
+    """额外可选模块：非去广告类（证书 / GitHub 加速 / WiFi Calling / 单 App 增强）。"""
+    import extra as extra_mod
+
+    src_list = sources.get("extra_module_sources") or []
+    if not src_list:
+        return {"skipped": True}
+
+    section("额外可选模块（非去广告，按需单独导入）")
+    vendor_map = {u: i.local_rel for u, i in (module_result.get("infos") or {}).items()
+                  if i.ok}
+    stats = extra_mod.build_extra_modules(
+        src_list, options, offline=offline, refresh=refresh, vendor_map=vendor_map)
+
+    for info in stats["infos"]:
+        if info.ok:
+            extra = []
+            if info.scripts: extra.append(f"脚本 {info.scripts}")
+            if info.rulesets: extra.append(f"规则集 {info.rulesets}")
+            if info.mitm_added: extra.append(f"补 MITM {info.mitm_added}")
+            if info.dropped: extra.append(f"剔脏数据 {info.dropped}")
+            log(f"  {info.output + '.srmodule':<32} {human(info.entries):>5} 条  "
+                f"{fmt_size(info.path.stat().st_size):>8}  {('、'.join(extra)) if extra else ''}")
+        else:
+            log(f"  {info.output:<32} ✗ {info.error}")
+    log(f"  合计 {stats['ok']} / {stats['total']} 个成功"
+        f"（脚本 {stats['scripts']}、规则集 {stats['rulesets']}、"
+        f"补 MITM {stats['mitm_added']}、剔除脏数据 {stats['dropped']}）")
+    return stats
+
+
 def build_conf_layer(sources: dict, options: dict, allow, result: dict) -> dict:
     """配置层：生成 base.conf（代理分组 + 引用域名层/模块层）。"""
     from emit_conf import emit_base_conf, emit_private_example
@@ -567,6 +599,26 @@ def build_module_report(add, result: dict) -> None:
             add("")
             for host, kw in held:
                 add(f"  - `{host}`（命中关键词 `{kw}`）")
+        add("")
+
+    ex = result.get("extra") or {}
+    if ex and not ex.get("skipped"):
+        add("### 额外可选模块（非去广告）")
+        add("")
+        add(f"共 {human(ex['ok'])} / {ex['total']} 个，按分组列在 "
+            f"`dist/module/extra/README.md`。统一做了脚本本地化、"
+            f"外部规则集本地化（{human(ex['rulesets'])} 处）、"
+            f"MITM 主机名补全（{human(ex['mitm_added'])} 个）、"
+            f"脏数据剔除（{human(ex['dropped'])} 条）。")
+        add("")
+        add("| 模块 | 分组 | 条目 | 脚本 | 说明 |")
+        add("| --- | --- | --: | --: | --- |")
+        for info in sorted(ex["infos"], key=lambda i: (i.group, i.output)):
+            if not info.ok:
+                add(f"| {info.output} | {info.group} | — | — | ❌ {info.error} |")
+                continue
+            add(f"| `{info.output}.srmodule` | {info.group} | {human(info.entries)} "
+                f"| {info.scripts or '—'} | {info.note.splitlines()[0][:60] if info.note else ''} |")
         add("")
 
     app = mod.get("app_stats") or {}
@@ -783,6 +835,10 @@ def main() -> int:
         result["module"] = build_module_layer(sources, options, allow,
                                               offline=args.offline,
                                               refresh=args.refresh)
+    if args.layer in ("all", "module"):
+        result["extra"] = build_extra_layer(sources, options, offline=args.offline,
+                                            refresh=args.refresh,
+                                            module_result=result.get("module") or {})
     if args.layer in ("all", "conf"):
         result["conf"] = build_conf_layer(sources, options, allow, result)
 

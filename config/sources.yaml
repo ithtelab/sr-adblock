@@ -164,3 +164,233 @@ app_module_source:
   list_api: https://api.github.com/repos/fmz200/wool_scripts/git/trees/main?recursive=1
   path_prefix: Surge/module/split/
   path_suffix: .sgmodule
+
+# ---------------------------------------------------------------------------
+# 额外可选模块（不属于去广告三层，按需单独导入）
+#
+# 与 module_sources 的区别：这些**不并入 ads-all**，各自独立产出到
+# dist/module/extra/。因为它们是不同的东西（证书、加速、WiFi Calling、单 App 增强），
+# 混进主模块会让不想用的人被动接受，也会让主模块的 MITM 主机名继续膨胀。
+#
+# 构建时会统一做：脚本本地化、外部规则集本地化、MITM 主机名补全、脏数据校验，
+# 并**保留上游的 #!arguments**（那是用户在手机上配置它们的界面）。
+#
+# kind: module  = 直接抓一个模块文件
+#       ruleset = 抓一个纯规则集（有类型、无策略列），包成模块的 [Rule] 段
+# ---------------------------------------------------------------------------
+extra_module_sources:
+
+  # ── 证书 / 安全 ───────────────────────────────────────────────
+  - id: ca-module
+    kind: module
+    name: 证书模块（换配置不再掉解密）
+    output: ca-module
+    group: 证书 / 安全
+    url: https://raw.githubusercontent.com/LOWERTOP/Shadowrocket-First/main/CA.sgmodule
+    repo: https://github.com/LOWERTOP/Shadowrocket-First
+    author: LOWERTOP
+    note: |
+      ★ 解决一个真实痛点：小火箭的 HTTPS 解密是**跟配置走**的，换一次配置就要重开一次。
+      装了它，把证书内容填进参数，解密状态就跟着模块走。
+      需要自己在「编辑参数」里粘贴证书内容（ca-p12）和密码。
+    usage: 装好后点模块的「编辑参数」，把证书内容与密码填进去，再打开「证书模块」开关
+
+  - id: vpn-detected
+    kind: module
+    name: 防 VPN / 代理检测
+    output: vpn-detected
+    group: 证书 / 安全
+    url: https://raw.githubusercontent.com/LOWERTOP/Shadowrocket-First/main/VPNdetected.sgmodule
+    repo: https://github.com/LOWERTOP/Shadowrocket-First
+    author: LOWERTOP
+    note: 让 App 检测不到你在用代理（把检测用的域名跳过代理）。很多国内 App 会因代理检测报错
+
+  # ── GitHub 体验包 ─────────────────────────────────────────────
+  - id: github-pro
+    kind: module
+    name: GitHub Pro
+    output: github-pro
+    group: GitHub 体验包
+    url: https://raw.githubusercontent.com/LOWERTOP/Shadowrocket-First/main/GitHubPro.sgmodule
+    repo: https://github.com/LOWERTOP/Shadowrocket-First
+    author: LOWERTOP
+    note: 私有库/大文件加速。**14 个参数，装完要按需填写**（私库地址等）
+
+  - id: github-cdn
+    kind: module
+    name: GitHub 资源加速（302 到 jsDelivr）
+    output: github-cdn
+    group: GitHub 体验包
+    url: https://raw.githubusercontent.com/LOWERTOP/Shadowrocket-First/main/GitHubCDN.sgmodule
+    repo: https://github.com/LOWERTOP/Shadowrocket-First
+    author: LOWERTOP
+    note: 把 raw.githubusercontent.com 的请求 302 到国内可用的 jsDelivr 镜像。**国内刚需**
+
+  - id: github-no-zoom
+    kind: module
+    name: GitHub iOS 禁止缩放
+    output: github-no-zoom
+    group: GitHub 体验包
+    url: https://raw.githubusercontent.com/LOWERTOP/Shadowrocket-First/main/GitHub-iOS-No-Zoom.sgmodule
+    repo: https://github.com/LOWERTOP/Shadowrocket-First
+    author: LOWERTOP
+    note: 手机上逛 GitHub 时禁止页面缩放，浏览体验好很多
+
+  # ── 插件生态 ──────────────────────────────────────────────────
+  - id: plugin2rocket
+    kind: module
+    name: 可莉插件中心转换器（自包含 Script-Hub）
+    output: plugin2rocket
+    group: 插件生态
+    url: https://raw.githubusercontent.com/iab0x00/ProxyRules/main/Rewrite/Plugin2Rocket.srmodule
+    repo: https://github.com/iab0x00/ProxyRules
+    author: iab0x00 / LOWERTOP
+    note: |
+      ★ 打通另一个生态：把「可莉插件中心」(hub.kelee.one) 的 Loon 插件，
+      在手机上**实时转换成小火箭模块**。已内嵌 Script-Hub 脚本，不需要额外装依赖。
+
+  - id: plugin-hub2rocket
+    kind: module
+    name: 插件中心转换（Script-Hub 版）
+    output: plugin-hub2rocket
+    group: 插件生态
+    url: https://raw.githubusercontent.com/iab0x00/ProxyRules/main/Rewrite/PluginHub2Rocket.srmodule
+    repo: https://github.com/iab0x00/ProxyRules
+    author: iab0x00
+    note: 上面那个的精简版，**需要先装 Script-Hub 模块**。两个别同时装
+
+  # ── 境外卡 / WiFi Calling ─────────────────────────────────────
+  - id: wificalling-hk
+    kind: module
+    name: WiFi Calling · 香港卡
+    output: wificalling-hk
+    group: 境外卡 / WiFi Calling
+    url: https://raw.githubusercontent.com/LOWERTOP/Shadowrocket-First/main/WiFiCallingHK.sgmodule
+    repo: https://github.com/LOWERTOP/Shadowrocket-First
+    author: LOWERTOP
+    note: 香港 SIM 卡（CSL / CMHK / 3HK）的 Wi-Fi Calling 规则。模块内自带自动匹配香港节点的策略组
+
+  - id: wificalling-uk
+    kind: module
+    name: WiFi Calling · 英国卡
+    output: wificalling-uk
+    group: 境外卡 / WiFi Calling
+    url: https://raw.githubusercontent.com/LOWERTOP/Shadowrocket-First/main/WiFiCallingUK.sgmodule
+    repo: https://github.com/LOWERTOP/Shadowrocket-First
+    author: LOWERTOP
+    note: 英国 SIM 卡的 Wi-Fi Calling 规则
+
+  - id: wificalling-us
+    kind: module
+    name: WiFi Calling · 美国卡
+    output: wificalling-us
+    group: 境外卡 / WiFi Calling
+    url: https://raw.githubusercontent.com/LOWERTOP/Shadowrocket-First/main/WiFiCallingUS.sgmodule
+    repo: https://github.com/LOWERTOP/Shadowrocket-First
+    author: LOWERTOP
+    note: 美国 SIM 卡的 Wi-Fi Calling 规则
+
+  - id: talkatone
+    kind: module
+    name: Talkatone
+    output: talkatone
+    group: 境外卡 / WiFi Calling
+    url: https://raw.githubusercontent.com/LOWERTOP/Shadowrocket-First/main/Talkatone.sgmodule
+    repo: https://github.com/LOWERTOP/Shadowrocket-First
+    author: LOWERTOP
+    note: Talkatone 保号与通话优化（境外号玩家常用），97 条规则
+
+  - id: ultramobile
+    kind: module
+    name: Ultra Mobile WiFi Calling
+    output: ultramobile-wificalling
+    group: 境外卡 / WiFi Calling
+    url: https://raw.githubusercontent.com/LOWERTOP/Shadowrocket-First/main/UltraMobileWiFiCalling.sgmodule
+    repo: https://github.com/LOWERTOP/Shadowrocket-First
+    author: LOWERTOP
+    note: Ultra Mobile 的 Wi-Fi Calling 规则
+
+  # ── 单 App 增强 ───────────────────────────────────────────────
+  - id: youtube-noad
+    kind: module
+    name: YouTube 去广告
+    output: youtube-noad
+    group: 单 App 增强
+    url: https://raw.githubusercontent.com/iab0x00/ProxyRules/main/Rewrite/YouTubeNoAd.sgmodule
+    repo: https://github.com/iab0x00/ProxyRules
+    author: iab0x00
+    note: 纯 JS 实现（binary-body-mode），无域名拦截。我们主模块里没有这个
+
+  - id: hongguo
+    kind: module
+    name: 红果短剧 去广告
+    output: hongguo
+    group: 单 App 增强
+    url: https://raw.githubusercontent.com/LOWERTOP/Shadowrocket-First/main/HongGuo.module
+    repo: https://github.com/LOWERTOP/Shadowrocket-First
+    author: LOWERTOP
+    note: 红果免费短剧的去广告规则
+
+  - id: luckin
+    kind: module
+    name: 瑞幸咖啡
+    output: luckin
+    group: 单 App 增强
+    url: https://raw.githubusercontent.com/LOWERTOP/Shadowrocket-First/main/LuckinCoffee.sgmodule
+    repo: https://github.com/LOWERTOP/Shadowrocket-First
+    author: LOWERTOP
+    note: 瑞幸咖啡 App 的广告与弹窗处理
+
+  - id: spotify
+    kind: module
+    name: Spotify 增强
+    output: spotify
+    group: 单 App 增强
+    url: https://raw.githubusercontent.com/LOWERTOP/Shadowrocket-First/main/Spotify.sgmodule
+    repo: https://github.com/LOWERTOP/Shadowrocket-First
+    author: LOWERTOP
+    note: Spotify 去广告与歌词增强（含 2 个脚本）
+
+  - id: deepseek
+    kind: module
+    name: DeepSeek
+    output: deepseek
+    group: 单 App 增强
+    url: https://raw.githubusercontent.com/LOWERTOP/Shadowrocket-First/main/DeepSeek.sgmodule
+    repo: https://github.com/LOWERTOP/Shadowrocket-First
+    author: LOWERTOP
+    note: DeepSeek App 的净化规则
+
+  - id: cmcc-itv
+    kind: module
+    name: 咪咕视频 / 移动直播源
+    output: cmcc-itv
+    group: 单 App 增强
+    url: https://raw.githubusercontent.com/LOWERTOP/Shadowrocket-First/main/CMCCiTV.sgmodule
+    repo: https://github.com/LOWERTOP/Shadowrocket-First
+    author: LOWERTOP
+    note: 咪咕直播源（看电视直播）。引用了外部规则集，构建时会一并本地化
+
+  - id: netinfo
+    kind: module
+    name: 网络信息（NetInfo）
+    output: netinfo
+    group: 单 App 增强
+    url: https://raw.githubusercontent.com/iab0x00/ProxyRules/main/Rewrite/NetInfo.srmodule
+    repo: https://github.com/iab0x00/ProxyRules
+    author: iab0x00
+    note: 在 App 内查看当前出口 IP / 节点信息，排查网络问题时有用
+
+  # ── 系统 ─────────────────────────────────────────────────────
+  - id: no-ota
+    kind: ruleset
+    name: 屏蔽 iOS 系统更新提示
+    output: no-ota
+    group: 系统
+    url: https://raw.githubusercontent.com/fmz200/wool_scripts/main/Loon/rule/apple_update.list
+    repo: https://github.com/fmz200/wool_scripts
+    author: fmz200 (可莉)
+    desc: 拦掉 iPhone 的系统更新检查，去掉「设置」上的小红点与自动下载。想更新系统时停用本模块即可
+    note: |
+      ★ 很受欢迎的功能，但**和去广告是两回事**，所以做成独立模块。
+      想升级系统时把它停用就行。

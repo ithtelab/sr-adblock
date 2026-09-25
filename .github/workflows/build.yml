@@ -43,6 +43,9 @@ jobs:
           restore-keys: |
             sr-adblock-cache-
 
+      - name: 运行测试
+        run: python -m unittest discover tests -v
+
       - name: 构建
         id: build
         env:

@@ -20,9 +20,14 @@ from dataclasses import dataclass, field
 from util import warn
 
 # 小火箭支持的段落（Surge 专有的 [Panel] 等一律不出现在输出里）
+# 段落输出顺序，按小火箭配置文件的惯例排：
+# [General] -> [Proxy] -> [Proxy Group] -> [Rule] -> [Host] -> 各类重写 -> [Script] -> [MITM]
+# [Proxy]/[Proxy Group]/[Host] 是后加的 —— 上游有些模块自带策略组
+# （如 WiFi Calling 模块内置自动匹配该国节点的组）或 [Host] 修补。
 CANONICAL_ORDER = [
-    "[General]", "[Rule]", "[Header Rewrite]", "[URL Rewrite]",
-    "[Body Rewrite]", "[Map Local]", "[Script]", "[MITM]",
+    "[General]", "[Proxy]", "[Proxy Group]", "[Rule]", "[Host]",
+    "[Header Rewrite]", "[URL Rewrite]", "[Body Rewrite]", "[Map Local]",
+    "[Script]", "[MITM]",
 ]
 
 # 小火箭不支持的段落：一旦在输入里出现必须剔除
@@ -102,7 +107,25 @@ def entry_problem(section: str, text: str) -> str | None:
     实例：可莉 Surge 版模块的 [URL Rewrite] 里混进了一条 `hostname - reject`
     （在「WIFI万能钥匙」小节，应是作者编辑时留下的残句）。它会被当成
     「任何 URL 里含 hostname 就 reject」的正则 —— 必须拦下来。
+
+    ⚠️ **参数占位符必须放行**：上游有些模块把「规则类型」本身做成了参数，
+    例如 WiFi Calling 模块：
+
+        {{{苹果地区检测}}},gspe1-ssl.ls.apple.com,{{{默认代理分组}}}
+        {{{通话端口代理}}},((GEOIP,HK),(AND,((PROTOCOL,UDP),(OR,((DEST-PORT,500)...
+
+    参数默认值是 `DOMAIN-SUFFIX` / `AND`，由用户在小火箭里选择。这类条目
+    在静态检查阶段**无法判断合法性**（占位符会被小火箭替换）。
+    早期版本没放行它们，把 WiFi Calling 最关键的 UDP 端口规则（500/4500/
+    16384-16403，也就是 IPsec 的端口）当成"不支持的规则类型"删掉了 ——
+    模块会因此直接失效。所以：只要该段落里出现占位符，就跳过类型校验。
     """
+    if "{{{" in text:
+        # 只有 [Rule] 还能校验"有没有逗号分隔"这种结构性要求
+        if section == "[Rule]" and "," not in text:
+            return "不像规则（没有逗号分隔）"
+        return None
+
     if section == "[URL Rewrite]":
         # 两种合法写法：`模式 替换值 [标记]`（重定向）与 `模式 - 动作`（拦截）
         if " - " in text:
@@ -446,7 +469,9 @@ def derive_mitm_hosts(sections: dict[str, list[Block]], *,
 
     返回（可以补上的主机, [(被金融守卫拦下的主机, 触发词)], 统计）
     """
-    keywords = finance_keywords or FINANCE_GUARD
+    # 注意用 is None 而不是 or：显式传空列表 [] 的意思是"不要金融守卫"
+    # （测试和特殊场景需要），而 or 会把空列表当成假值、回退到默认守卫。
+    keywords = FINANCE_GUARD if finance_keywords is None else finance_keywords
     mitm_mod = Module(sections={"[MITM]": sections.get("[MITM]", [])})
     existing = set(parse_mitm(mitm_mod))
     pre_approved = set(approved or [])   # 用户在 config/mitm-extra.txt 里手动放行过的

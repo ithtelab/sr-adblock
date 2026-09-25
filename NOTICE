@@ -51,6 +51,23 @@
 原则：**保留原作者署名与出处路径**，不做改写，只在必要时修正小火箭不兼容的写法
 （修正内容会在构建报告里列出）。如果你的作品不希望被本项目引用，请提 issue，我会移除。
 
+## 二之二、额外可选模块来源（非去广告）
+
+`dist/module/extra/` 下是整合的上游功能模块，**不并入主模块**，按需单独导入。
+构建时统一做脚本本地化、外部规则集本地化、MITM 主机名补全、脏数据校验，
+并保留上游的 `#!arguments`（用户在小火箭里配置它们的界面）。
+
+| 来源 | 项目 | 许可 | 用到的模块 |
+| --- | --- | --- | --- |
+| LOWERTOP | https://github.com/LOWERTOP/Shadowrocket-First | 未声明 | `CA`（证书模块）、`VPNdetected`、`GitHubPro`、`GitHubCDN`、`GitHub-iOS-No-Zoom`、`WiFiCallingHK/UK/US`、`Talkatone`、`UltraMobileWiFiCalling`、`HongGuo`、`LuckinCoffee`、`Spotify`、`DeepSeek`、`CMCCiTV` |
+| iab0x00 | https://github.com/iab0x00/ProxyRules | 无许可证文件 | `Plugin2Rocket`（可莉插件中心转换器，内嵌 Script-Hub）、`PluginHub2Rocket`、`YouTubeNoAd`、`NetInfo` |
+| fmz200（奶思 / 可莉） | https://github.com/fmz200/wool_scripts | 未声明 | `Loon/rule/apple_update.list`（屏蔽 iOS 系统更新） |
+| Script-Hub 作者群 | https://github.com/Script-Hub-Org | 见其仓库 | `Plugin2Rocket` 内嵌的 4 个转换脚本（script-hub.js / Rewrite-Parser.js / rule-parser.js / script-converter.js） |
+| iKeLee / 可莉插件中心 | https://hub.kelee.one | — | `Plugin2Rocket` 转换的目标插件源（只做实时转换，不转载其内容） |
+
+这些模块的作者与署名都保留在各模块的 `#!author` 与文件头注释里。
+如果你不希望自己的作品被本项目引用，请提 issue，我会移除。
+
 ## 三、配置层来源
 
 `dist/conf/base.conf` 的分流分组结构（地区组用 `policy-regex-filter` 按节点名
