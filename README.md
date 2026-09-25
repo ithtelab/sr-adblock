@@ -234,8 +234,40 @@ RULE-SET,https://raw.githubusercontent.com/ithtelab/sr-adblock/release/ruleset/a
 它们和主模块一样做了脚本本地化、MITM 主机名补全、脏数据校验，
 并**保留了上游的参数声明**（参数就是你在小火箭里配置它们的界面）。
 
-索引（含每个模块的条目数/脚本数/说明，每次构建自动更新）：
-**[`dist/module/extra/README.md`](https://raw.githubusercontent.com/ithtelab/sr-adblock/release/module/extra/README.md)**
+### 怎么安装
+
+和装主模块的**方式完全一样**：
+
+> **小火箭 → 配置 → 模块 → 右上角 `+` → 粘贴链接 → 完成**
+
+链接格式固定，把模块名换掉就行：
+
+```
+https://raw.githubusercontent.com/ithtelab/sr-adblock/release/module/extra/<模块名>.srmodule
+```
+
+### 先装这三个（我推荐的）
+
+```
+https://raw.githubusercontent.com/ithtelab/sr-adblock/release/module/extra/ca-module.srmodule
+https://raw.githubusercontent.com/ithtelab/sr-adblock/release/module/extra/no-ota.srmodule
+https://raw.githubusercontent.com/ithtelab/sr-adblock/release/module/extra/github-cdn.srmodule
+```
+
+| 模块 | 装完还要做什么 |
+| :-- | :-- |
+| **`ca-module`** | ★ 换配置不再掉解密。**点它的「编辑参数」，把证书内容与密码填进去，再打开开关** |
+| **`no-ota`** | ★ 屏蔽 iOS 系统更新提示（去掉「设置」小红点）。想升级系统时停用即可 |
+| **`github-cdn`** | 把 GitHub 的 raw 请求 302 到国内可用的 jsDelivr 镜像。装上即生效 |
+
+### 全部模块
+
+> ⚠️ **不要一次全装。** 装得越多，被解密的主机名越多、越费电，出问题也越难排查。
+> **只装你真正需要的。**
+
+👉 [**点这里看全部 20 个模块（每个都带可复制的完整链接）**](https://github.com/ithtelab/sr-adblock/blob/release/module/extra/README.md)
+
+那个索引是**每次构建自动生成的**，数字不会过期。下面是分组概览：
 
 | 分组 | 模块 | 说明 |
 | :-- | :-- | :-- |

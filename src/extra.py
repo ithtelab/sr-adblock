@@ -222,17 +222,33 @@ def build_extra_modules(src_list: list[dict], options: dict, *,
     for i in ok:
         groups.setdefault(i.group, []).append(i)
 
-    # 分组索引
-    lines = ["# 额外可选模块", "",
-             "这些模块**不属于去广告三层**，是额外功能，按需单独导入。",
-             "每个都做了脚本本地化与 MITM 补全，并保留了上游的参数声明。", ""]
+    # 分组索引 —— **每个模块都要给出可直接复制的完整链接**，
+    # 否则用户手里只有一个模块名、不知道去哪装（这是真实反馈过的问题）。
+    lines = [
+        "# 额外可选模块", "",
+        "这些模块**不属于去广告三层**，是额外功能，按需单独导入。",
+        "每个都做了脚本本地化与 MITM 补全，并保留了上游的参数声明。", "",
+        "## 怎么安装", "",
+        "和小火箭的其他模块一样：**配置 → 模块 → 右上角 + → 粘贴下面的链接**。", "",
+        "链接格式固定，换模块名即可：", "",
+        "```",
+        f"{repo_url}/module/extra/<模块名>.srmodule",
+        "```", "",
+        "> ⚠️ 不要一次全装。装得越多，被解密的主机名越多、越费电。只装真正需要的。",
+        "",
+    ]
     for g, items in sorted(groups.items()):
-        lines += [f"## {g}", "", "| 模块 | 条目 | 脚本 | 参数 | 说明 |",
+        lines += [f"## {g}", "",
+                  "| 模块 | 条目 | 脚本 | 参数 | 说明 |",
                   "| :-- | --: | --: | :--: | :-- |"]
         for i in sorted(items, key=lambda x: x.output):
-            lines.append(f"| `{i.output}.srmodule` | {i.entries} | "
+            url = f"{repo_url}/module/extra/{i.output}.srmodule"
+            lines.append(f"| [`{i.output}`]({url}) | {i.entries} | "
                          f"{i.scripts or '—'} | {'有' if i.has_args else '—'} | {i.note} |")
-        lines.append("")
+        lines += ["", "**本组链接（可直接复制）：**", "", "```"]
+        lines += [f"{repo_url}/module/extra/{i.output}.srmodule"
+                  for i in sorted(items, key=lambda x: x.output)]
+        lines += ["```", ""]
     write_text(out_dir / "README.md", "\n".join(lines))
 
     return {"infos": infos, "ok": len(ok), "total": len(infos),
