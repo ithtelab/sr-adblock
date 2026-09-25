@@ -168,6 +168,71 @@ def load_mitm_extra() -> list[str]:
     return out
 
 
+def fetch_github_metrics(repo: str) -> dict:
+    """取星标/复刻/关注/仓库访问量，画在看板上。
+
+    全部是公开数据；**不采集任何用户行为**。失败就返回空 dict ——
+    看板少一行而已，绝不影响构建。
+    """
+    import json as _json
+    import os
+    import urllib.request
+    from util import USER_AGENT
+
+    token = os.environ.get("GITHUB_TOKEN") or os.environ.get("GH_TOKEN")
+    headers = {"Accept": "application/vnd.github+json", "User-Agent": USER_AGENT}
+    if token:
+        headers["Authorization"] = f"Bearer {token}"
+
+    def get(path: str):
+        req = urllib.request.Request(f"https://api.github.com/repos/{repo}{path}",
+                                     headers=headers)
+        with urllib.request.urlopen(req, timeout=20) as resp:
+            return _json.loads(resp.read().decode("utf-8"))
+
+    out: dict = {}
+    try:
+        d = get("")
+        out.update(stars=d.get("stargazers_count"), forks=d.get("forks_count"),
+                   watchers=d.get("subscribers_count"))
+    except Exception:  # noqa: BLE001
+        pass
+    try:
+        t = get("/traffic/views")
+        out.update(views=t.get("count"), views_uniques=t.get("uniques"))
+    except Exception:  # noqa: BLE001 - GITHUB_TOKEN 多半没有 traffic 权限
+        pass
+    return {k: v for k, v in out.items() if v is not None}
+
+
+def build_stats_layer(options: dict, result: dict) -> dict:
+    """生成数据看板（dist/stats.svg + stats.json）。"""
+    from emit_stats import emit_stats
+
+    section("数据看板")
+    repo_url = options.get("repo_url", "").rstrip("/")
+    # repo_url 形如 https://raw.githubusercontent.com/<owner>/<repo>/<branch>
+    # 要取 [owner, repo]，不能直接把最后两段当仓库名（那样会拿到 repo/branch）
+    parts = [p for p in repo_url.split("/") if p]
+    if "raw.githubusercontent.com" in repo_url and len(parts) >= 3:
+        repo = f"{parts[-3]}/{parts[-2]}"
+    elif len(parts) >= 2:
+        repo = f"{parts[-2]}/{parts[-1]}"
+    else:
+        repo = "unknown/unknown"
+    gh = fetch_github_metrics(repo)
+
+    info = emit_stats(DIST_DIR, domain_result=result.get("domain") or {},
+                      module_result=result.get("module") or {},
+                      conf_result=result.get("conf") or {},
+                      gh=gh, repo=repo, repo_url=repo_url)
+    log(f"  stats.svg  {fmt_size(info['svg'].stat().st_size)}"
+        f"（{len(info['metrics'])} 项规则指标 + {len(info['github'])} 项 GitHub 指标）")
+    if not gh:
+        log("  ├ 取不到 GitHub 指标（无 token 或权限不足），看板少一行，不影响构建")
+    return info
+
+
 def load_mitm_exclude() -> list[str]:
     """读 config/mitm-exclude.txt：默认不参与解密的域名（银行/券商/支付/办公）。"""
     path = CONFIG_DIR / "mitm-exclude.txt"
@@ -689,6 +754,23 @@ def write_report(result: dict, options: dict, elapsed: float) -> Path:
 
     build_module_report(add, result)
 
+    stats_info = result.get("stats") or {}
+    if stats_info:
+        add("## 数据看板")
+        add("")
+        add("`dist/stats.svg`（README 里显示的那张卡片）每次构建自动重画，数字全部来自本次构建：")
+        add("")
+        add("| 指标 | 数值 |")
+        add("| --- | --- |")
+        for value, label, _ in stats_info["metrics"]:
+            add(f"| {label} | {value} |")
+        for value, label, _ in stats_info["github"]:
+            add(f"| {label} | {value} |")
+        add("")
+        add("> 「安装量」「累计拦截次数」这类数字**不存在** —— 规则在用户手机上本地运行，")
+        add("> 不回传任何数据。这是刻意的设计，不是没做。")
+        add("")
+
     add("## 产物")
     add("")
     add("| 文件 | 条数 |")
@@ -785,6 +867,8 @@ def main() -> int:
                                               refresh=args.refresh)
     if args.layer in ("all", "conf"):
         result["conf"] = build_conf_layer(sources, options, allow, result)
+    if args.layer in ("all", "domain", "module", "conf"):
+        result["stats"] = build_stats_layer(options, result)
 
     report = write_report(result, options, time.time() - started)
 
