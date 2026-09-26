@@ -1,0 +1,48 @@
+#!name=🆆🅸🅵🅸🆅🅾🅲 Ultra Mobile
+#!desc=参数编辑可以细化设置。适用于Ultra Mobile、T-Mobile SIM卡的Wi-Fi Calling功能。使用本模块后打开飞行模式后再关闭飞行模式进行联网即可正常开启Wi-Fi calling
+#!author=LOWERTOP（本仓库仅本地化脚本并重新发布）
+#!icon=https://raw.githubusercontent.com/LOWERTOP/Shadowrocket-First/refs/heads/main/img/WiFi_calling.png
+#!homepage=https://github.com/LOWERTOP/Shadowrocket-First
+#!update=2026-09-26
+#!arguments=默认首页代理:PROXY, 通话端口代理:AND, 苹果地区检测:DOMAIN-SUFFIX
+#!arguments-desc=·默认首页代理：模块默认使用首页的默认节点进行代理，可填入所需要的节点名称、代理分组名称等策略进行更改\n\n·通话端口代理：模块默认代理了Wi-Fi通话常用的500和4500的UDP端口，填入#号可以禁用相关端口的代理\n\n·苹果地区检测：模块默认代理了苹果的地区检测URL地址，填入#号可以恢复为默认规则\n\n·地区检测查询：https://gspe1-ssl.ls.apple.com/pep/gcc
+
+# ==========================================================================
+#  本文件由 sr-adblock-factory 合并生成，请勿手工编辑
+#  生成时间: 2026-09-26 07:16:54
+#
+#  合并来源：
+#    - LOWERTOP/Shadowrocket-First/main/UltraMobileWiFiCalling.sgmodule
+#    - 来源：https://github.com/LOWERTOP/Shadowrocket-First
+#
+#  规模：
+#    [Rule]                 19
+#    MITM 主机名               0
+#
+#  在小火箭里的装法：
+#    导入方式：小火箭 → 配置 → 模块 → 右上角 + → 粘贴本文件链接
+# ==========================================================================
+
+[Rule]
+# 苹果地区检测
+{{{苹果地区检测}}},gspe1-ssl.ls.apple.com,{{{默认首页代理}}}
+# 通话端口代理
+{{{通话端口代理}}},((GEOIP,US),(AND,((PROTOCOL,UDP),(OR,((DEST-PORT,500),(DEST-PORT,4500)))))),{{{默认首页代理}}}
+# 地址代理
+DOMAIN-SUFFIX,crl.t-mobile.com,{{{默认首页代理}}}
+DOMAIN-SUFFIX,depdg.epc.mnc260.mcc310.pub.3gppnetwork.org,{{{默认首页代理}}}
+DOMAIN-SUFFIX,eas3.msg.t-mobile.com,{{{默认首页代理}}}
+DOMAIN-SUFFIX,epdg.epc.mnc240.mcc310.pub.3gppnetwork.org,{{{默认首页代理}}}
+DOMAIN-SUFFIX,epdg.epc.mnc260.mcc310.pub.3gppnetwork.org,{{{默认首页代理}}}
+DOMAIN-SUFFIX,mascns.t-mobile.com,{{{默认首页代理}}}
+DOMAIN-SUFFIX,ns.sipgeo.t-mobile.com,{{{默认首页代理}}}
+DOMAIN-SUFFIX,optimizely.com,{{{默认首页代理}}}
+DOMAIN-SUFFIX,redirect.ultra.me,{{{默认首页代理}}}
+DOMAIN-SUFFIX,ss.epdg.epc.geo.mnc260.mcc310.pub.3gppnetwork.org,{{{默认首页代理}}}
+DOMAIN-SUFFIX,ss.epdg.epc.mnc260.mcc310.pub.3gppnetwork.org,{{{默认首页代理}}}
+DOMAIN-SUFFIX,ultramobile.com,{{{默认首页代理}}}
+DOMAIN-KEYWORD,t-mobile,{{{默认首页代理}}}
+DOMAIN-KEYWORD,ultramobile,{{{默认首页代理}}}
+IP-CIDR,206.29.177.36/32,{{{默认首页代理}}},no-resolve
+IP-CIDR,208.54.0.0/16,{{{默认首页代理}}},no-resolve
+IP-CIDR,66.94.0.0/19,{{{默认首页代理}}},no-resolve

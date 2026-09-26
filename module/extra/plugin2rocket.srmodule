@@ -1,0 +1,44 @@
+#!name=Plugin2Rocket
+#!desc=将可莉插件中心转换给小火箭使用; 插件中心 https://hub.kelee.one ; 此版集成Script-Hub，若有侵权可联系我们立马删除
+#!author=iab0x00 / LOWERTOP（本仓库仅本地化脚本并重新发布）
+#!homepage=https://raw.githubusercontent.com/ithtelab/sr-adblock
+#!update=2026-09-26
+
+# ==========================================================================
+#  本文件由 sr-adblock-factory 合并生成，请勿手工编辑
+#  生成时间: 2026-09-26 07:16:52
+#
+#  合并来源：
+#    - iab0x00/ProxyRules/main/Rewrite/Plugin2Rocket.srmodule
+#    - 来源：https://github.com/iab0x00/ProxyRules
+#    - 已本地化 4 个脚本
+#
+#  规模：
+#    [General]              1
+#    [Body Rewrite]         1
+#    [Header Rewrite]       1
+#    [Script]               4
+#    [MITM]                 1
+#    MITM 主机名               3
+#
+#  在小火箭里的装法：
+#    导入方式：小火箭 → 配置 → 模块 → 右上角 + → 粘贴本文件链接
+# ==========================================================================
+
+[General]
+force-http-engine-hosts = %APPEND% script.hub,*.script.hub
+
+[Header Rewrite]
+http-request ^https://hub\.kelee\.one/list\.json header-del if-none-match
+
+[Body Rewrite]
+http-response ^https://hub\.kelee\.one/list\.json "loon://import\?plugin=(https://kelee.one/Tool/Loon/Lpx/(.+).lpx)" "shadowrocket://install?module=http://script.hub/file/_start_/$1/_end_/$2.sgmodule%3Ftype%3Dloon-plugin%26target%3Dshadowrocket-module%26del%3Dtrue%26jqEnabled%3Dtrue"
+
+[Script]
+Script Hub: 前端 = type=http-request,pattern=^https?:\/\/script\.hub\/($|edit\/|reload),script-path=https://raw.githubusercontent.com/ithtelab/sr-adblock/release/vendor/Script-Hub-Org/Script-Hub/main/script-hub.js,timeout=300
+Script Hub: 重写转换 = type=http-request,pattern=^https?:\/\/script\.hub\/file\/_start_\/.+type=(?:qx-rewrite|surge-module|loon-plugin|all-module),script-path=https://raw.githubusercontent.com/ithtelab/sr-adblock/release/vendor/Script-Hub-Org/Script-Hub/main/Rewrite-Parser.js,timeout=300
+Script Hub: 规则集转换 = type=http-request,pattern=^https?:\/\/script\.hub\/file\/_start_\/.+type=rule-set,script-path=https://raw.githubusercontent.com/ithtelab/sr-adblock/release/vendor/Script-Hub-Org/Script-Hub/main/rule-parser.js,timeout=300
+Script Hub: 脚本转换 = type=http-request,pattern=^https?:\/\/script\.hub\/convert\/,script-path=https://raw.githubusercontent.com/ithtelab/sr-adblock/release/vendor/Script-Hub-Org/Script-Hub/main/script-converter.js,timeout=300
+
+[MITM]
+hostname = %APPEND% script.hub,*.script.hub,hub.kelee.one

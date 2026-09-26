@@ -1,0 +1,51 @@
+#!name=CCTV 去广告
+#!desc=只针对 CCTV 的去广告模块，出问题时可以单独停用而不影响其他 App
+#!author=sr-adblock-factory（原始规则来自 可莉/奶思 wool_scripts）
+#!homepage=https://raw.githubusercontent.com/ithtelab/sr-adblock
+#!update=2026-09-26
+
+# ==========================================================================
+#  本文件由 sr-adblock-factory 合并生成，请勿手工编辑
+#  生成时间: 2026-09-26 07:16:51
+#
+#  合并来源：
+#    - fmz200/wool_scripts split/partY/CCTV.sgmodule
+#
+#  规模：
+#    [Rule]                 21
+#    [Map Local]            1
+#    [MITM]                 1
+#
+#  在小火箭里的装法：
+#    只想去掉 CCTV 的广告、不想装总模块时用这个
+#    导入方式与总模块相同（配置 → 模块 → + → 粘贴链接）
+# ==========================================================================
+
+[Rule]
+DOMAIN,galaxy.bjcathay.com,REJECT
+DOMAIN,mdrecv.app.cntvwb.cn,REJECT
+DOMAIN,sdapprecv.app.cntvwb.cn,REJECT
+DOMAIN,vdapprecv.app.cntvwb.cn,REJECT
+DOMAIN-SUFFIX,a.cctv.com,REJECT
+DOMAIN-SUFFIX,ad.cctv.com,REJECT
+DOMAIN-SUFFIX,ad.cntv.cn,REJECT
+DOMAIN-SUFFIX,ad-cdn.cctv.com,REJECT
+DOMAIN-SUFFIX,ad-cdn_core.cctv.com,REJECT
+DOMAIN-SUFFIX,ad_core.cctv.com,REJECT
+DOMAIN-SUFFIX,ad_m.cctv.com,REJECT
+DOMAIN-SUFFIX,adguanggao.eee114.com,REJECT
+DOMAIN-SUFFIX,afp.qiyi.com,REJECT
+DOMAIN-SUFFIX,cctv.adsunion.com,REJECT
+DOMAIN-SUFFIX,d.cntv.cn,REJECT
+DOMAIN-SUFFIX,de.pandora.xiaomi.com,REJECT
+DOMAIN-SUFFIX,mishop.pandora.xiaomi.com,REJECT
+DOMAIN-SUFFIX,cws-cctv.conviva.com,REJECT
+DOMAIN-SUFFIX,mdrecv.app.cntvwb.cn,REJECT
+DOMAIN-SUFFIX,sdapprecv.app.cntvwb.cn,REJECT
+DOMAIN-SUFFIX,vdapprecv.app.cntvwb.cn,REJECT
+
+[Map Local]
+^https?:\/\/www\.cntv\.cn\/nettv\/adp\/ data-type=text data=" " status-code=200
+
+[MITM]
+hostname = %APPEND% www.cntv.cn

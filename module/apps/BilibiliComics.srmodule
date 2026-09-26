@@ -1,0 +1,41 @@
+#!name=BilibiliComics 去广告
+#!desc=只针对 BilibiliComics 的去广告模块，出问题时可以单独停用而不影响其他 App
+#!author=sr-adblock-factory（原始规则来自 可莉/奶思 wool_scripts）
+#!homepage=https://raw.githubusercontent.com/ithtelab/sr-adblock
+#!update=2026-09-26
+
+# ==========================================================================
+#  本文件由 sr-adblock-factory 合并生成，请勿手工编辑
+#  生成时间: 2026-09-26 07:16:51
+#
+#  合并来源：
+#    - fmz200/wool_scripts split/partB/BilibiliComics.sgmodule
+#
+#  规模：
+#    [Map Local]            8
+#    [Script]               4
+#    [MITM]                 1
+#
+#  在小火箭里的装法：
+#    只想去掉 BilibiliComics 的广告、不想装总模块时用这个
+#    导入方式与总模块相同（配置 → 模块 → + → 粘贴链接）
+# ==========================================================================
+
+[Map Local]
+^https?:\/\/i\d\.hdslb\.com\/bfs\/fawkes data-type=text data="{}" status-code=200 header="Content-Type:application/json"
+^https?:\/\/i\d\.hdslb\.com\/bfs\/manga-static\/\w+\.(?>jpg|png)$ data-type=text data=" " status-code=200
+^https?:\/\/i\d\.hdslb\.com\/bfs\/manga-static\/\w+\.(?>jpg|png)@1200w_1500h_1e_1c data-type=text data=" " status-code=200
+^https?:\/\/manga\.bilibili\.com\/twirp\/comic\.v\d\.Comic\/(?>Recommend|MoreRecommend|Flash|ListFlash|GetBubbles|GetActivityTab|GetCommonBanner|GetComicConfigPicList|SearchBanner|AppInit) data-type=text data=" " status-code=200
+^https?:\/\/manga\.bilibili\.com\/twirp\/comic\.v\d\.Shop\/GetShopItems data-type=text data="{}" status-code=200 header="Content-Type:application/json"
+^https?:\/\/manga\.bilibili\.com\/twirp\/user\.v\d\.SeasonV\d\/GetSeasonInfo data-type=text data="{}" status-code=200 header="Content-Type:application/json"
+^https?:\/\/manga\.bilibili\.com\/twirp\/user\.v\d\.Read\/ActInfo data-type=text data=" " status-code=200
+^https?:\/\/manga\.bilibili\.com\/twirp\/novel\.v\d\.Novel\/MoreRecommend data-type=text data="{}" status-code=200 header="Content-Type:application/json"
+
+[Script]
+哔哩哔哩漫画 = type=http-response,pattern=^https?:\/\/manga\.bilibili\.com\/twirp\/user\.v\d\.User\/UCenterConf,script-path=https://raw.githubusercontent.com/ithtelab/sr-adblock/release/vendor/zirawell/R-Store/main/Res/Scripts/AntiAd/bilibiliManga.js,requires-body=true,timeout=60
+哔哩哔哩漫画 = type=http-response,pattern=^https?:\/\/manga\.bilibili\.com\/twirp\/user\.v\d\.User\/GetInitInfo,script-path=https://raw.githubusercontent.com/ithtelab/sr-adblock/release/vendor/zirawell/R-Store/main/Res/Scripts/AntiAd/bilibiliManga.js,requires-body=true,timeout=60
+哔哩哔哩漫画 = type=http-response,pattern=^https?:\/\/manga\.bilibili\.com\/twirp\/comic\.v\d\.Home\/HomeFeed,script-path=https://raw.githubusercontent.com/ithtelab/sr-adblock/release/vendor/zirawell/R-Store/main/Res/Scripts/AntiAd/bilibiliManga.js,requires-body=true,timeout=60
+哔哩哔哩漫画 = type=http-response,pattern=^https?:\/\/manga\.bilibili\.com\/twirp\/comic\.v\d\.Comment\/Main,script-path=https://raw.githubusercontent.com/ithtelab/sr-adblock/release/vendor/zirawell/R-Store/main/Res/Scripts/AntiAd/bilibiliManga.js,requires-body=true,timeout=60
+
+[MITM]
+hostname = %APPEND% manga.bilibili.com, i*.hdslb.com, id.hdslb.com

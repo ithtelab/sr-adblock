@@ -1,0 +1,44 @@
+#!name=ShuQiNovel 去广告
+#!desc=只针对 ShuQiNovel 的去广告模块，出问题时可以单独停用而不影响其他 App
+#!author=sr-adblock-factory（原始规则来自 可莉/奶思 wool_scripts）
+#!homepage=https://raw.githubusercontent.com/ithtelab/sr-adblock
+#!update=2026-09-26
+
+# ==========================================================================
+#  本文件由 sr-adblock-factory 合并生成，请勿手工编辑
+#  生成时间: 2026-09-26 07:16:51
+#
+#  合并来源：
+#    - fmz200/wool_scripts split/partS/ShuQiNovel.sgmodule
+#
+#  规模：
+#    [Rule]                 1
+#    [URL Rewrite]          14
+#    [MITM]                 1
+#
+#  在小火箭里的装法：
+#    只想去掉 ShuQiNovel 的广告、不想装总模块时用这个
+#    导入方式与总模块相同（配置 → 模块 → + → 粘贴链接）
+# ==========================================================================
+
+[Rule]
+DOMAIN-SUFFIX,ut2.shuqistat.com,REJECT
+
+[URL Rewrite]
+^https?:\/\/ut2\.shuqistat\.com\/.+\.gif - reject
+^https?:\/\/dsp\.toutiao\.com\/api\/xunfei\/ads\/ - reject
+^https?:\/\/sf3-be-pack\.pglstatp-toutiao\.com\/img\/ad\.union\.api - reject
+^https?:\/\/api-access\.pangolin-sdk-toutiao\.com\/api\/ad\/.+ - reject
+^https?:\/\/sq\.sljkj\.com\/api\/sdk\/ads2 - reject
+^https?:\/\/ocean\.shuqireader\.com\/api\/ad\/adserver\/.+ - reject
+^https?:\/\/ocean\.shuqireader\.com\/api\/route\/iosReadPage\/ad.+ - reject
+^https?:\/\/.+\.pglstatp-toutiao\.com - reject
+^https?:\/\/img-tailor\.11222\.cn\/pm\/app\/.+\.gif - reject
+^https?:\/\/img-tailor\.11222\.cn\/cms\/upload\/img\/.+ - reject
+^https?:\/\/message\.shuqireader\.com\/message\/.+ - reject
+^https?:\/\/101\.91\.69\.26:8080\/.+ - reject
+^https?:\/\/feedback\.uc\.cn\/feedback\/api\/get_unread_status - reject
+^https?:\/\/.+\.shuqireader\.com\/sapi\/.+ - reject
+
+[MITM]
+hostname = %APPEND% ut2.shuqistat.com, dsp.toutiao.com, sf3-be-pack.pglstatp-toutiao.com, api-access.pangolin-sdk-toutiao.com, sq.sljkj.com, ocean.shuqireader.com, img-tailor.11222.cn, message.shuqireader.com, feedback.uc.cn, *.shuqireader.com, 101.91.69.26

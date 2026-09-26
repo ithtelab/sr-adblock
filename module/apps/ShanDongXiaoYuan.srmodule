@@ -1,0 +1,37 @@
+#!name=ShanDongXiaoYuan 去广告
+#!desc=只针对 ShanDongXiaoYuan 的去广告模块，出问题时可以单独停用而不影响其他 App
+#!author=sr-adblock-factory（原始规则来自 可莉/奶思 wool_scripts）
+#!homepage=https://raw.githubusercontent.com/ithtelab/sr-adblock
+#!update=2026-09-26
+
+# ==========================================================================
+#  本文件由 sr-adblock-factory 合并生成，请勿手工编辑
+#  生成时间: 2026-09-26 07:16:51
+#
+#  合并来源：
+#    - fmz200/wool_scripts split/partS/ShanDongXiaoYuan.sgmodule
+#
+#  规模：
+#    [Map Local]            6
+#    [MITM]                 1
+#
+#  在小火箭里的装法：
+#    只想去掉 ShanDongXiaoYuan 的广告、不想装总模块时用这个
+#    导入方式与总模块相同（配置 → 模块 → + → 粘贴链接）
+# ==========================================================================
+
+[Map Local]
+# 去除ai视频
+^https:\/\/api\.huachenjie\.com\/run-front\/ai\/getAICategory data-type=text data="{}" status-code=200 header="Content-Type:application/json"
+# 去除顶部横幅
+^https:\/\/api\.huachenjie\.com\/run-front\/home\/sports\/getPopup data-type=text data="{}" status-code=200 header="Content-Type:application/json"
+# 去除首页广告
+^https:\/\/api\.huachenjie\.com\/run-front\/ad data-type=text data="{}" status-code=200 header="Content-Type:application/json"
+# 去除“我”页面下方福袋
+^http:\/\/ad\.shunchangzhixing\.com\/getAd data-type=text data="{}" status-code=200 header="Content-Type:application/json"
+# 去除开屏广告
+^https:\/\/open\.e\.kuaishou\.cn\/rest\/e\/v3\/open data-type=text data="{}" status-code=200 header="Content-Type:application/json"
+^https:\/\/zlsdk\.1rtb\.net\/sdk\/req_ad\?sdk_version=\d+\.\d+\.\d+\.\d+&device_os=iOS&accept_ad_type=\d+&app_id=\d+&pid=\d+&sdk_version_code=\d+ data-type=text data="{}" status-code=200 header="Content-Type:application/json"
+
+[MITM]
+hostname = %APPEND% api.huachenjie.com, open.e.kuaishou.cn, ad.shunchangzhixing.com, zlsdk.1rtb.net

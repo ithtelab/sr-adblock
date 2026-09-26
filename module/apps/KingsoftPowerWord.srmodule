@@ -1,0 +1,45 @@
+#!name=KingsoftPowerWord 去广告
+#!desc=只针对 KingsoftPowerWord 的去广告模块，出问题时可以单独停用而不影响其他 App
+#!author=sr-adblock-factory（原始规则来自 可莉/奶思 wool_scripts）
+#!homepage=https://raw.githubusercontent.com/ithtelab/sr-adblock
+#!update=2026-09-26
+
+# ==========================================================================
+#  本文件由 sr-adblock-factory 合并生成，请勿手工编辑
+#  生成时间: 2026-09-26 07:16:51
+#
+#  合并来源：
+#    - fmz200/wool_scripts split/partJ/KingsoftPowerWord.sgmodule
+#
+#  规模：
+#    [Rule]                 8
+#    [URL Rewrite]          3
+#    [Map Local]            2
+#    [MITM]                 1
+#
+#  在小火箭里的装法：
+#    只想去掉 KingsoftPowerWord 的广告、不想装总模块时用这个
+#    导入方式与总模块相同（配置 → 模块 → + → 粘贴链接）
+# ==========================================================================
+
+[Rule]
+DOMAIN,ad-stat.ksosoft.com,REJECT
+DOMAIN,img.auction-ads.wpscdn.cn,REJECT
+DOMAIN,counter.kingsoft.com,REJECT
+DOMAIN,counter.ksosoft.com,REJECT
+DOMAIN,minfo.wps.cn,REJECT
+DOMAIN,mobad.ijinshan.com,REJECT
+DOMAIN,ups.ksmobile.net,REJECT
+DOMAIN,ws.ksmobile.net,REJECT
+
+[URL Rewrite]
+^https?:\/\/dict-mobile\.iciba\.com\/interface\/index\.php\?.+(c=ad|collectFeedsAdShowCount|KSFeedsAdCardViewController) - reject
+^https?:\/\/mobile-pic\.cache\.iciba\.com\/feeds_ad\/ - reject
+^https?:\/\/.+?\.kingsoft-office-service\.com - reject
+
+[Map Local]
+^https?:\/\/service\.iciba\.com\/popo\/open\/screens\/v\d\?adjson data-type=text data=" " status-code=200
+^https?:\/\/\w+?\.kingsoft-office-service\.com\/ad data-type=text data=" " status-code=200
+
+[MITM]
+hostname = %APPEND% dict-mobile.iciba.com, mobile-pic.cache.iciba.com, service.iciba.com, *.kingsoft-office-service.com

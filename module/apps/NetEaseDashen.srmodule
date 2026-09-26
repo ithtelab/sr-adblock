@@ -1,0 +1,51 @@
+#!name=NetEaseDashen 去广告
+#!desc=只针对 NetEaseDashen 的去广告模块，出问题时可以单独停用而不影响其他 App
+#!author=sr-adblock-factory（原始规则来自 可莉/奶思 wool_scripts）
+#!homepage=https://raw.githubusercontent.com/ithtelab/sr-adblock
+#!update=2026-09-26
+
+# ==========================================================================
+#  本文件由 sr-adblock-factory 合并生成，请勿手工编辑
+#  生成时间: 2026-09-26 07:16:51
+#
+#  合并来源：
+#    - fmz200/wool_scripts split/partW/NetEaseDashen.sgmodule
+#
+#  规模：
+#    [Rule]                 10
+#    [URL Rewrite]          1
+#    [Body Rewrite]         1
+#    [Map Local]            1
+#    [MITM]                 1
+#
+#  在小火箭里的装法：
+#    只想去掉 NetEaseDashen 的广告、不想装总模块时用这个
+#    导入方式与总模块相同（配置 → 模块 → + → 粘贴链接）
+# ==========================================================================
+
+[Rule]
+# 拦截HTTPDNS
+DOMAIN,httpdns.music.163.com,REJECT
+DOMAIN,httpdns.n.netease.com,REJECT
+DOMAIN,httpdns-sdk.n.netease.com,REJECT
+DOMAIN,httpdns.yunxindns.com,REJECT
+DOMAIN,lofter.httpdns.c.163.com,REJECT
+DOMAIN,music.httpdns.c.163.com,REJECT
+IP-CIDR,59.111.239.61/32,REJECT,no-resolve
+IP-CIDR,59.111.239.62/32,REJECT,no-resolve
+IP-CIDR,115.236.121.51/32,REJECT,no-resolve
+IP-CIDR,115.236.121.195/32,REJECT,no-resolve
+
+[URL Rewrite]
+# 广告下发
+^https:\/\/god\.gameyw\.netease\.com\/v\d\/ad - reject
+
+[Body Rewrite]
+http-response-jq ^https:\/\/app-conf\.ds\.163\.com\/v\d\/app\/base\/conf\/static\/start-config\? 'delpaths([["result","updateConfig",2,"itemList",94,"itemList",2]])'
+
+[Map Local]
+# 我的页面 - 横幅广告、为你推荐、更多会员权益、精选活动
+^https:\/\/god\.gameyw\.netease\.com\/v\d\/app\/static\/conf\/getByModuleNameList$ data-type=text data="{}" status-code=200 header="Content-Type:application/json"
+
+[MITM]
+hostname = %APPEND% god.gameyw.netease.com, app-conf.ds.163.com

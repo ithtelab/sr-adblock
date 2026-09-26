@@ -1,0 +1,54 @@
+#!name=🆆🅸🅵🅸🆅🅾🅲 UK Call
+#!desc=参数编辑可以细化设置。适用于部分英国SIM卡的Wi-Fi Calling功能
+#!author=LOWERTOP（本仓库仅本地化脚本并重新发布）
+#!icon=https://raw.githubusercontent.com/LOWERTOP/Shadowrocket-First/refs/heads/main/img/WiFi_calling.png
+#!homepage=https://github.com/LOWERTOP/Shadowrocket-First
+#!update=2026-09-26
+#!arguments=默认代理分组:UK-Call, 通话端口代理:AND, 苹果地区检测:DOMAIN-SUFFIX
+#!arguments-desc=·默认代理分组：默认使用模块内置的名为“UK-Call”的代理分组进行代理，可填入自定义的代理分组或节点名称\n\n·通话端口代理：模块默认代理了Wi-Fi通话常用的500和4500的UDP端口，填入#号可以禁用相关端口的代理\n\n·苹果地区检测：模块默认代理了苹果的地区检测URL地址，填入#号可以恢复为默认规则\n\n·地区检测查询：https://gspe1-ssl.ls.apple.com/pep/gcc
+
+# ==========================================================================
+#  本文件由 sr-adblock-factory 合并生成，请勿手工编辑
+#  生成时间: 2026-09-26 07:16:53
+#
+#  合并来源：
+#    - LOWERTOP/Shadowrocket-First/main/WiFiCallingUK.sgmodule
+#    - 来源：https://github.com/LOWERTOP/Shadowrocket-First
+#
+#  规模：
+#    [Proxy Group]          1
+#    [Rule]                 17
+#    MITM 主机名               0
+#
+#  在小火箭里的装法：
+#    导入方式：小火箭 → 配置 → 模块 → 右上角 + → 粘贴本文件链接
+# ==========================================================================
+
+[Proxy Group]
+UK-Call = url-test,url=http://www.gstatic.com/generate_204,interval=600,tolerance=0,timeout=5,select=0,policy-regex-filter=🇬🇧|Kingdom|England|Britain|British|London|英国|伦敦|英|UK
+
+[Rule]
+# 苹果地区检测
+{{{苹果地区检测}}},gspe1-ssl.ls.apple.com,{{{默认代理分组}}}
+# 通话端口代理
+{{{通话端口代理}}},((GEOIP,GB),(AND,((PROTOCOL,UDP),(OR,((DEST-PORT,500),(DEST-PORT,4500)))))),{{{默认代理分组}}}
+# 沃达丰
+DOMAIN-SUFFIX,entsrv-uk.vodafone.com,{{{默认代理分组}}}
+DOMAIN-SUFFIX,vuk-gto.prod.ondemandconnectivity.com,{{{默认代理分组}}}
+DOMAIN-SUFFIX,epdg.epc.mnc015.mcc234.pub.3gppnetwork.org,{{{默认代理分组}}}
+DOMAIN-SUFFIX,ss.epdg.epc.mnc015.mcc234.pub.3gppnetwork.org,{{{默认代理分组}}}
+DOMAIN-SUFFIX,ss.epdg.epc.geo.mnc015.mcc234.pub.3gppnetwork.org,{{{默认代理分组}}}
+DOMAIN-KEYWORD,mcc234,{{{默认代理分组}}}
+IP-CIDR,88.82.0.0/19,{{{默认代理分组}}},no-resolve
+IP-CIDR,148.252.160.0/19,{{{默认代理分组}}},no-resolve
+# CMLink UK EE
+IP-CIDR,46.68.0.0/17,{{{默认代理分组}}},no-resolve
+# Giffgaff
+DOMAIN-SUFFIX,giffgaff.com,{{{默认代理分组}}}
+IP-CIDR,87.194.0.0/16,{{{默认代理分组}}},no-resolve
+# VOXI
+DOMAIN,vfgb.idemia.io,{{{默认代理分组}}}
+IP-CIDR,148.252.160.0/19,{{{默认代理分组}}},no-resolve
+# CTE
+DOMAIN-SUFFIX,ee.co.uk,{{{默认代理分组}}}
+IP-CIDR,31.94.0.0/16,{{{默认代理分组}}},no-resolve

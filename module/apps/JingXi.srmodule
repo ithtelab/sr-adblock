@@ -1,0 +1,32 @@
+#!name=JingXi 去广告
+#!desc=只针对 JingXi 的去广告模块，出问题时可以单独停用而不影响其他 App
+#!author=sr-adblock-factory（原始规则来自 可莉/奶思 wool_scripts）
+#!homepage=https://raw.githubusercontent.com/ithtelab/sr-adblock
+#!update=2026-09-26
+
+# ==========================================================================
+#  本文件由 sr-adblock-factory 合并生成，请勿手工编辑
+#  生成时间: 2026-09-26 07:16:51
+#
+#  合并来源：
+#    - fmz200/wool_scripts split/partJ/JingXi.sgmodule
+#
+#  规模：
+#    [Body Rewrite]         2
+#    [Script]               1
+#    [MITM]                 1
+#
+#  在小火箭里的装法：
+#    只想去掉 JingXi 的广告、不想装总模块时用这个
+#    导入方式与总模块相同（配置 → 模块 → + → 粘贴链接）
+# ==========================================================================
+
+[Body Rewrite]
+http-response ^https?:\/\/api\.m\.jd\.com\/client\.action\?functionId=lite_advertising jdLiteAdvertisingVO fmz200
+http-response ^https?:\/\/api\.m\.jd\.com\/client\.action\?functionId=lite_SmartPush pushData fmz200
+
+[Script]
+京喜 = type=http-response,pattern=^https?:\/\/api\.m\.jd\.com\/api\?functionId=delivery_show,script-path=https://raw.githubusercontent.com/ithtelab/sr-adblock/release/vendor/fmz200/wool_scripts/main/Scripts/jingxiAd.js,requires-body=true,timeout=60
+
+[MITM]
+hostname = %APPEND% api.m.jd.com

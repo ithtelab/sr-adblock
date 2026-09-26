@@ -1,0 +1,29 @@
+#!name=MITM 排除解密（银行 / 券商 / 支付 / 办公）
+#!desc=已预置 45 个银行/券商/支付/办公域名，装到模块列表最下方即生效；被排除的域名不做 HTTPS 解密，所以 App 不会因证书校验异常，（代价：依赖解密的重写类去广告对它们无效，域名层拦截不受影响）
+#!author=LOWERTOP 原始模块 / sr-adblock-factory 预置名单并改为默认生效
+#!icon=https://raw.githubusercontent.com/LOWERTOP/Shadowrocket-First/main/img/Shadowrocket_icon.png
+#!homepage=https://raw.githubusercontent.com/ithtelab/sr-adblock
+#!update=2026-09-26
+#!arguments=额外排除:无
+#!arguments-desc=已预置常见银行/券商/支付/办公域名（见仓库 config/mitm-exclude.txt），\n\n这里的「额外排除」用来临时加更多，格式：-域名，多个用英文逗号分隔，例如 -mybank.com,-mycompany.com\n\n要取消某个 App 的排除（让它的去广告生效），把它的域名从 config/mitm-exclude.txt 里删掉后重新构建。
+
+# ==========================================================================
+#  本文件由 sr-adblock-factory 合并生成，请勿手工编辑
+#  生成时间: 2026-09-26 07:16:50
+#
+#  合并来源：
+#    - LOWERTOP/Shadowrocket-First • Anti-MITM.sgmodule
+#    - 预置名单 45 条，来自本仓库 config/mitm-exclude.txt
+#
+#  规模：
+#    预置排除域名                 45
+#    额外排除                   1 个参数（在「编辑参数」里填）
+#
+#  在小火箭里的装法：
+#    ★ 装在小火箭的模块列表【最下方】（顺序不对可能不生效）
+#    装完什么都不用填，预置的银行/券商/支付/办公域名就已经被排除解密
+#    要临时再加：点模块的「编辑参数」，填 -域名（多个用英文逗号分隔）
+# ==========================================================================
+
+[MITM]
+hostname = %APPEND% -icbc.com.cn,-ccb.com,-abchina.com,-abchina.com.cn,-boc.cn,-bankofchina.com,-bankcomm.com,-cmbchina.com,-psbc.com,-spdb.com.cn,-cib.com.cn,-cmbc.com.cn,-hxb.com.cn,-pab.com,-cgbchina.com.cn,-cebbank.com,-citicbank.com,-bankofbeijing.com.cn,-nbcb.com.cn,-jsbchina.cn,-hzbank.com.cn,-srcb.com,-eastmoney.com,-futunn.com,-gtja.com,-htsc.com.cn,-citics.com,-cmschina.com,-swhysc.com,-chinastock.com.cn,-gf.com.cn,-10jqka.com.cn,-xueqiu.com,-alipay.com,-tenpay.com,-unionpay.com,-unionpayintl.com,-95516.com,-dingtalk.com,-feishu.cn,-larksuite.com,-wps.cn,-shimo.im,-zoom.us,-slack.com,{{{额外排除}}}

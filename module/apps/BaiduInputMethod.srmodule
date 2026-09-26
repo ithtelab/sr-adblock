@@ -1,0 +1,42 @@
+#!name=BaiduInputMethod 去广告
+#!desc=只针对 BaiduInputMethod 的去广告模块，出问题时可以单独停用而不影响其他 App
+#!author=sr-adblock-factory（原始规则来自 可莉/奶思 wool_scripts）
+#!homepage=https://raw.githubusercontent.com/ithtelab/sr-adblock
+#!update=2026-09-26
+
+# ==========================================================================
+#  本文件由 sr-adblock-factory 合并生成，请勿手工编辑
+#  生成时间: 2026-09-26 07:16:51
+#
+#  合并来源：
+#    - fmz200/wool_scripts split/partB/BaiduInputMethod.sgmodule
+#
+#  规模：
+#    [URL Rewrite]          5
+#    [Map Local]            5
+#    [MITM]                 1
+#
+#  在小火箭里的装法：
+#    只想去掉 BaiduInputMethod 的广告、不想装总模块时用这个
+#    导入方式与总模块相同（配置 → 模块 → + → 粘贴链接）
+# ==========================================================================
+
+[URL Rewrite]
+^https?:\/\/r6\.mo\.baidu\.com\/res\/file/advertisement\/files\/.+\.jpg - reject
+^https?:\/\/res\.mi\.baidu\.com\/imeres\/ime-res\/advertisement\/files\/.+\.jpg - reject
+^https?:\/\/mime\.baidu\.com\/v5\/activity\/advertisementnonrealtime - reject
+^https?:\/\/mime\.baidu\.com\/v5\/start_screen_ads\/list - reject
+^https?:\/\/mime\.baidu\.com\/v5\/hotpatch\/check\?hotpatch - reject
+
+[Map Local]
+# 百度输入法开屏
+^https?:\/\/mime\.baidu\.com\/v5\/start_screen_ads/list data-type=text data="{}" status-code=200 header="Content-Type:application/json"
+# 应用内灵感语录 输入页面推荐里语录
+^https?:\/\/mime\.baidu\.com\/sapi\/v1\/lccorpus\/(applist|pannellist) data-type=text data="{}" status-code=200 header="Content-Type:application/json"
+# 输入法点击图标
+^https?:\/\/mime\.baidu\.com\/sapi\/v1\/circle\/joinedlist data-type=text data="{}" status-code=200 header="Content-Type:application/json"
+^https?:\/\/mime\.baidu\.com\/commer\/pocket_api\/enterprise_list data-type=text data="{}" status-code=200 header="Content-Type:application/json"
+^https?:\/\/mbd\.baidu\.com\/ccs\/v1\/start\/confsync\?appname=baidu_input data-type=text data="{}" status-code=200 header="Content-Type:application/json"
+
+[MITM]
+hostname = %APPEND% r6.mo.baidu.com, res.mi.baidu.com, mime.baidu.com, mbd.baidu.com

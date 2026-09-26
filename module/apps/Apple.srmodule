@@ -1,0 +1,49 @@
+#!name=Apple 去广告
+#!desc=只针对 Apple 的去广告模块，出问题时可以单独停用而不影响其他 App
+#!author=sr-adblock-factory（原始规则来自 可莉/奶思 wool_scripts）
+#!homepage=https://raw.githubusercontent.com/ithtelab/sr-adblock
+#!update=2026-09-26
+
+# ==========================================================================
+#  本文件由 sr-adblock-factory 合并生成，请勿手工编辑
+#  生成时间: 2026-09-26 07:16:51
+#
+#  合并来源：
+#    - fmz200/wool_scripts split/partA/Apple.sgmodule
+#
+#  规模：
+#    [Rule]                 26
+#
+#  在小火箭里的装法：
+#    只想去掉 Apple 的广告、不想装总模块时用这个
+#    导入方式与总模块相同（配置 → 模块 → + → 粘贴链接）
+# ==========================================================================
+
+[Rule]
+DOMAIN,advertising.apple.com,REJECT
+DOMAIN,api-adservices.apple.com,REJECT
+DOMAIN,apple.comscoreresearch.com,REJECT
+DOMAIN,banners.itunes.apple.com,REJECT
+DOMAIN,iad.apple.com,REJECT
+DOMAIN,iadcontent.apple.com,REJECT
+DOMAIN,iadctest.qwapi.com,REJECT
+DOMAIN,iadmoo.apple.com,REJECT
+DOMAIN,iadworkbench.apple.com,REJECT
+DOMAIN,launch.apple.com,REJECT
+DOMAIN,metrics.apple.com,REJECT
+DOMAIN,qwapi.apple.com,REJECT
+DOMAIN,securemetrics.apple.com,REJECT
+DOMAIN,webproxy-advp.iad-apple.com,REJECT
+DOMAIN,webproxy-advp.iad-apple.com.akadns.net,REJECT
+DOMAIN-SUFFIX,advp.apple.com,REJECT
+DOMAIN-SUFFIX,iadsdk.apple.com,REJECT
+# 安全浏览限制解除, REJECT
+DOMAIN,lookup.api.bsb.baidu.com,REJECT
+DOMAIN,proxy.safebrowsing.apple,REJECT
+DOMAIN,safebrowsing.g.applimg.com,REJECT
+DOMAIN,safebrowsing.googleapis.com,REJECT
+DOMAIN,safebrowsing.urlsec.qq.com,REJECT
+DOMAIN,token.safebrowsing.apple,REJECT
+DOMAIN,vs6.bj2ct.u3.ucweb.com,REJECT
+DOMAIN-SUFFIX,safebrowsing.apple,REJECT
+DOMAIN-SUFFIX,u3.ucweb.com,REJECT

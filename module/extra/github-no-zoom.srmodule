@@ -1,0 +1,30 @@
+#!name=🅶🅸🆃🅷🅴🅻🅿 禁止缩放
+#!desc=防止 GitHub 输入框与代码编辑器触发 iOS 自动缩放，同时避免影响 GitHub 非仓库页面
+#!author=LOWERTOP（本仓库仅本地化脚本并重新发布）
+#!icon=https://raw.githubusercontent.com/fmz200/wool_scripts/main/icons/apps/github_00.png
+#!homepage=https://github.com/LOWERTOP/Shadowrocket-First
+#!update=2026-09-26
+
+# ==========================================================================
+#  本文件由 sr-adblock-factory 合并生成，请勿手工编辑
+#  生成时间: 2026-09-26 07:16:52
+#
+#  合并来源：
+#    - LOWERTOP/Shadowrocket-First/main/GitHub-iOS-No-Zoom.sgmodule
+#    - 来源：https://github.com/LOWERTOP/Shadowrocket-First
+#    - 已本地化 1 个脚本
+#
+#  规模：
+#    [Script]               1
+#    [MITM]                 1
+#    MITM 主机名               1
+#
+#  在小火箭里的装法：
+#    导入方式：小火箭 → 配置 → 模块 → 右上角 + → 粘贴本文件链接
+# ==========================================================================
+
+[Script]
+GitHub iOS 防自动缩放 = type=http-response,pattern=^https?:\/\/github\.com\/[^\/]+\/[^\/]+(?:\/.*)?$,requires-body=1,max-size=-1,engine=webview,script-path=https://raw.githubusercontent.com/ithtelab/sr-adblock/release/vendor/LOWERTOP/Shadowrocket-First/main/JS/github-ios-no-zoom.js,timeout=10
+
+[MITM]
+hostname = %APPEND% github.com

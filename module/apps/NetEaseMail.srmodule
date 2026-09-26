@@ -1,0 +1,40 @@
+#!name=NetEaseMail 去广告
+#!desc=只针对 NetEaseMail 的去广告模块，出问题时可以单独停用而不影响其他 App
+#!author=sr-adblock-factory（原始规则来自 可莉/奶思 wool_scripts）
+#!homepage=https://raw.githubusercontent.com/ithtelab/sr-adblock
+#!update=2026-09-26
+
+# ==========================================================================
+#  本文件由 sr-adblock-factory 合并生成，请勿手工编辑
+#  生成时间: 2026-09-26 07:16:51
+#
+#  合并来源：
+#    - fmz200/wool_scripts split/partW/NetEaseMail.sgmodule
+#
+#  规模：
+#    [URL Rewrite]          7
+#    [Map Local]            4
+#    [MITM]                 1
+#
+#  在小火箭里的装法：
+#    只想去掉 NetEaseMail 的广告、不想装总模块时用这个
+#    导入方式与总模块相同（配置 → 模块 → + → 粘贴链接）
+# ==========================================================================
+
+[URL Rewrite]
+^https?:\/\/p\.c\.music\.126.net\/.*?jpg$ - reject
+^https?:\/\/img1.126.net\/.+dpi=\w{7,8} - reject
+^https?:\/\/img1.126.net\/channel14\/ - reject
+^https?:\/\/iadmusicmat\.music.126.net\/.*?jpg$ - reject
+^https?:\/\/p\d\.music\.126\.net\/\w+==\/\d+\.jpg$ - reject
+^https?:\/\/nex.163.com\/q - reject
+^https?:\/\/g1.163.com\/madfeedback - reject
+
+[Map Local]
+^https?:\/\/p[^4](c)?\.music\.126\.net\/\w+==\/10995\d{13}\.jpg$ data-type=tiny-gif status-code=200
+^https?:\/\/www.icourse163.org\/.*?(Advertisement) data-type=tiny-gif status-code=200
+^https?:\/\/www\.icourse163\.org\/mob\/j\/v1\/mobRecommendRPCBean\.getMaxWeightAdvertisement\.rpc data-type=text data=" " status-code=200
+^https?:\/\/interface3?\.music\.163\.com/eapi/(ad|abtest|sp|hot|store|mlog|search/(specialkeyword|defaultkeyword|hot)) data-type=tiny-gif status-code=200
+
+[MITM]
+hostname = %APPEND% *.music.126.net, img1.126.net, www.icourse163.org, nex.163.com, g1.163.com, client.mail.163.com, c.m.163.com, interface*.music.163.com

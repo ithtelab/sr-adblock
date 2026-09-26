@@ -1,0 +1,40 @@
+#!name=Meiyou 去广告
+#!desc=只针对 Meiyou 的去广告模块，出问题时可以单独停用而不影响其他 App
+#!author=sr-adblock-factory（原始规则来自 可莉/奶思 wool_scripts）
+#!homepage=https://raw.githubusercontent.com/ithtelab/sr-adblock
+#!update=2026-09-26
+
+# ==========================================================================
+#  本文件由 sr-adblock-factory 合并生成，请勿手工编辑
+#  生成时间: 2026-09-26 07:16:51
+#
+#  合并来源：
+#    - fmz200/wool_scripts split/partM/Meiyou.sgmodule
+#
+#  规模：
+#    [Rule]                 1
+#    [URL Rewrite]          5
+#    [Script]               2
+#    [MITM]                 1
+#
+#  在小火箭里的装法：
+#    只想去掉 Meiyou 的广告、不想装总模块时用这个
+#    导入方式与总模块相同（配置 → 模块 → + → 粘贴链接）
+# ==========================================================================
+
+[Rule]
+DOMAIN,ad.seeyouyima.com,REJECT
+
+[URL Rewrite]
+^http:\/\/x\.seeyouyima\.com\/adx\/staticstics\? - reject
+^https:\/\/axxd\.xmseeyouyima\.com\/ad\/ - reject
+^https:\/\/axxd\.xmseeyouyima\.com\/ad_statistics\? - reject
+^https:\/\/axxd\.xmseeyouyima\.com\/v1\/getad\? - reject
+^https:\/\/axxd\.xmseeyouyima\.com\/pregetad\? - reject
+
+[Script]
+美柚App净化 = type=http-response,pattern=^https:\/\/config-service\.seeyouyima\.com\/api\/configs\/batch\?,script-path=https://raw.githubusercontent.com/ithtelab/sr-adblock/release/vendor/fmz200/wool_scripts/main/Scripts/meiyou/meiyou_ads.js,requires-body=true,timeout=60
+美柚App净化 = type=http-response,pattern=^https:\/\/config-service\.seeyouyima\.com\/api\/configs\?,script-path=https://raw.githubusercontent.com/ithtelab/sr-adblock/release/vendor/fmz200/wool_scripts/main/Scripts/meiyou/meiyou_ads.js,requires-body=true,timeout=60
+
+[MITM]
+hostname = %APPEND% x.seeyouyima.com, axxd.xmseeyouyima.com, config-service.seeyouyima.com

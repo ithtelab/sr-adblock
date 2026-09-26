@@ -1,0 +1,59 @@
+#!name=🆆🅸🅵🅸🆅🅾🅲 HK Call
+#!desc=香港 SIM 卡 Wi-Fi Calling 配置规则，本规则适用于 CSL、CMHK、3 HK 的香港 SIM 卡的 Wi-Fi Calling 功能，分流节点须是香港节点
+#!author=LOWERTOP（本仓库仅本地化脚本并重新发布）
+#!icon=https://raw.githubusercontent.com/LOWERTOP/Shadowrocket-First/refs/heads/main/img/WiFi_calling.png
+#!homepage=https://github.com/LOWERTOP/Shadowrocket-First
+#!update=2026-09-26
+#!arguments=默认代理分组:HK-Call, 通话端口代理:AND, 苹果地区检测:DOMAIN-SUFFIX
+#!arguments-desc=·默认代理分组：默认使用模块内置的名为“HK-Call”的代理分组进行代理，可填入自定义的代理分组或节点名称\n\n·通话端口代理：模块默认代理了Wi-Fi通话常用的500和4500的UDP端口，填入#号可以禁用相关端口的代理\n\n·苹果地区检测：模块默认代理了苹果的地区检测URL地址，填入#号可以恢复为默认规则\n\n·地区检测查询：https://gspe1-ssl.ls.apple.com/pep/gcc
+
+# ==========================================================================
+#  本文件由 sr-adblock-factory 合并生成，请勿手工编辑
+#  生成时间: 2026-09-26 07:16:53
+#
+#  合并来源：
+#    - LOWERTOP/Shadowrocket-First/main/WiFiCallingHK.sgmodule
+#    - 来源：https://github.com/LOWERTOP/Shadowrocket-First
+#
+#  规模：
+#    [Proxy Group]          1
+#    [Rule]                 24
+#    MITM 主机名               0
+#
+#  在小火箭里的装法：
+#    导入方式：小火箭 → 配置 → 模块 → 右上角 + → 粘贴本文件链接
+# ==========================================================================
+
+[Proxy Group]
+HK-Call = url-test,url=http://www.gstatic.com/generate_204,interval=600,tolerance=0,timeout=5,select=0,policy-regex-filter=🇭🇰|HK|Hong|hong|香港|深港|沪港|京港|港
+
+[Rule]
+# 苹果地区检测
+{{{苹果地区检测}}},gspe1-ssl.ls.apple.com,{{{默认代理分组}}}
+# 通话端口代理
+{{{通话端口代理}}},((GEOIP,HK),(AND,((PROTOCOL,UDP),(OR,((DEST-PORT,500),(DEST-PORT,4500),(DEST-PORT,16384–16403)))))),{{{默认代理分组}}}
+# CSL(ClubSim)
+DOMAIN,csl.prod.ondemandconnectivity.com,{{{默认代理分组}}}
+DOMAIN,hhk.prod.ondemandconnectivity.com,{{{默认代理分组}}}
+DOMAIN,epdg.epc.mnc000.mcc454.pub.3gppnetwork.org,{{{默认代理分组}}}
+DOMAIN,ss.epdg.epc.mnc000.mcc454.pub.3gppnetwork.org,{{{默认代理分组}}}
+DOMAIN,ss.epdg.epc.geo.mnc000.mcc454.pub.3gppnetwork.org,{{{默认代理分组}}}
+# CMHK
+IP-CIDR,182.239.86.0/24,{{{默认代理分组}}},no-resolve
+IP-CIDR,182.239.118.0/24,{{{默认代理分组}}},no-resolve
+IP-CIDR,203.142.127.0/24,{{{默认代理分组}}},no-resolve
+DOMAIN-SUFFIX,hk.chinamobile.com,{{{默认代理分组}}}
+DOMAIN,h3a.prod.ondemandconnectivity.com,{{{默认代理分组}}}
+DOMAIN,epdg.epc.mnc012.mcc454.pub.3gppnetwork.org,{{{默认代理分组}}}
+DOMAIN,xcap.ims.mnc012.mcc454.pub.3gppnetwork.org,{{{默认代理分组}}}
+DOMAIN,bsf.mnc012.mcc454.pub.3gppnetwork.org,{{{默认代理分组}}}
+# 3 HK
+IP-CIDR,4.209.41.157/32,{{{默认代理分组}}},no-resolve
+IP-CIDR,124.217.186.0/24,{{{默认代理分组}}},no-resolve
+IP-CIDR,203.145.92.0/24,{{{默认代理分组}}},no-resolve
+DOMAIN-SUFFIX,three.com.hk,{{{默认代理分组}}}
+DOMAIN,hhk.prod.ondemandconnectivity.com,{{{默认代理分组}}}
+DOMAIN-SUFFIX,mnc003.mcc454.pub.3gppnetwork.org,{{{默认代理分组}}}
+DOMAIN-SUFFIX,mnc004.mcc454.pub.3gppnetwork.org,{{{默认代理分组}}}
+DOMAIN-SUFFIX,mnc005.mcc454.pub.3gppnetwork.org,{{{默认代理分组}}}
+DOMAIN-SUFFIX,mnc014.mcc454.pub.3gppnetwork.org,{{{默认代理分组}}}

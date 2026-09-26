@@ -1,0 +1,40 @@
+#!name=ChinaTelecom 去广告
+#!desc=只针对 ChinaTelecom 的去广告模块，出问题时可以单独停用而不影响其他 App
+#!author=sr-adblock-factory（原始规则来自 可莉/奶思 wool_scripts）
+#!homepage=https://raw.githubusercontent.com/ithtelab/sr-adblock
+#!update=2026-09-26
+
+# ==========================================================================
+#  本文件由 sr-adblock-factory 合并生成，请勿手工编辑
+#  生成时间: 2026-09-26 07:16:51
+#
+#  合并来源：
+#    - fmz200/wool_scripts split/partZ/ChinaTelecom.sgmodule
+#
+#  规模：
+#    [Rule]                 6
+#    [URL Rewrite]          1
+#    [Map Local]            1
+#    [MITM]                 1
+#
+#  在小火箭里的装法：
+#    只想去掉 ChinaTelecom 的广告、不想装总模块时用这个
+#    导入方式与总模块相同（配置 → 模块 → + → 粘贴链接）
+# ==========================================================================
+
+[Rule]
+DOMAIN,ad.21cn.com,REJECT
+DOMAIN,ad.k.21cn.com,REJECT
+DOMAIN,admarket.21cn.com,REJECT
+DOMAIN,adshows.21cn.com,REJECT
+IP-CIDR,122.229.8.47/32,REJECT,no-resolve
+IP-CIDR,122.229.29.89/32,REJECT,no-resolve
+
+[URL Rewrite]
+^https?:\/\/cloud\.189\.cn\/include\/splash\/ - reject
+
+[Map Local]
+^https?:\/\/zt-app\.go189\.cn\/zt-app\/welcome\/.*?Animation data-type=tiny-gif status-code=200
+
+[MITM]
+hostname = %APPEND% cloud.189.cn, zt-app.go189.cn

@@ -1,0 +1,49 @@
+#!name=Adobe 去广告
+#!desc=只针对 Adobe 的去广告模块，出问题时可以单独停用而不影响其他 App
+#!author=sr-adblock-factory（原始规则来自 可莉/奶思 wool_scripts）
+#!homepage=https://raw.githubusercontent.com/ithtelab/sr-adblock
+#!update=2026-09-26
+
+# ==========================================================================
+#  本文件由 sr-adblock-factory 合并生成，请勿手工编辑
+#  生成时间: 2026-09-26 07:16:51
+#
+#  合并来源：
+#    - fmz200/wool_scripts split/partA/Adobe.sgmodule
+#
+#  规模：
+#    [Rule]                 26
+#
+#  在小火箭里的装法：
+#    只想去掉 Adobe 的广告、不想装总模块时用这个
+#    导入方式与总模块相同（配置 → 模块 → + → 粘贴链接）
+# ==========================================================================
+
+[Rule]
+DOMAIN-SUFFIX,3dns-2.adobe.com,REJECT
+DOMAIN-SUFFIX,3dns-3.adobe.com,REJECT
+DOMAIN-SUFFIX,activate.adobe.com,REJECT
+DOMAIN-SUFFIX,activate-sea.adobe.com,REJECT
+DOMAIN-SUFFIX,activate-sjc0.adobe.com,REJECT
+DOMAIN-SUFFIX,adobe-dns.adobe.com,REJECT
+DOMAIN-SUFFIX,adobe-dns-2.adobe.com,REJECT
+DOMAIN-SUFFIX,adobe-dns-3.adobe.com,REJECT
+DOMAIN-SUFFIX,ereg.adobe.com,REJECT
+DOMAIN-SUFFIX,get3.adobe.com,REJECT
+DOMAIN-SUFFIX,hl2rcv.adobe.com,REJECT
+DOMAIN-SUFFIX,practivate.adobe.com,REJECT
+DOMAIN-SUFFIX,wip3.adobe.com,REJECT
+DOMAIN-SUFFIX,wwis-dubc1-vip60.adobe.com,REJECT
+DOMAIN-SUFFIX,lm.licenses.adobe.com,REJECT
+DOMAIN-SUFFIX,na2m-pr.licenses.adobe.com,REJECT
+DOMAIN-SUFFIX,na1r.services.adobe.com,REJECT
+DOMAIN-SUFFIX,hlrcv.stage.adobe.com,REJECT
+DOMAIN-SUFFIX,activate.wip3.adobe.com,REJECT
+DOMAIN-SUFFIX,ereg.wip3.adobe.com,REJECT
+DOMAIN-SUFFIX,lmlicenses.wip4.adobe.com,REJECT
+# Marketo, REJECT
+DOMAIN-SUFFIX,marketo.com,REJECT
+DOMAIN-SUFFIX,asia.marketo.com,REJECT
+DOMAIN-SUFFIX,pages2.marketo.com,REJECT
+DOMAIN-SUFFIX,marketo.net,REJECT
+DOMAIN-SUFFIX,munchkin.marketo.net,REJECT

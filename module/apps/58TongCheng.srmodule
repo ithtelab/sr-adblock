@@ -1,0 +1,53 @@
+#!name=58TongCheng 去广告
+#!desc=只针对 58TongCheng 的去广告模块，出问题时可以单独停用而不影响其他 App
+#!author=sr-adblock-factory（原始规则来自 可莉/奶思 wool_scripts）
+#!homepage=https://raw.githubusercontent.com/ithtelab/sr-adblock
+#!update=2026-09-26
+
+# ==========================================================================
+#  本文件由 sr-adblock-factory 合并生成，请勿手工编辑
+#  生成时间: 2026-09-26 07:16:51
+#
+#  合并来源：
+#    - fmz200/wool_scripts split/part5/58TongCheng.sgmodule
+#
+#  规模：
+#    [Rule]                 17
+#    [URL Rewrite]          2
+#    [Map Local]            2
+#    [MITM]                 1
+#
+#  在小火箭里的装法：
+#    只想去掉 58TongCheng 的广告、不想装总模块时用这个
+#    导入方式与总模块相同（配置 → 模块 → + → 粘贴链接）
+# ==========================================================================
+
+[Rule]
+DOMAIN,track.58.com,REJECT
+DOMAIN,tracklog.58.com,REJECT
+DOMAIN-SUFFIX,58mingri.cn,REJECT
+DOMAIN-SUFFIX,58mingtian.cn,REJECT
+DOMAIN-SUFFIX,sc.58mingtian.cn,REJECT
+DOMAIN-SUFFIX,t1.58cdn.com.cn,REJECT
+DOMAIN-SUFFIX,t2.58cdn.com.cn,REJECT
+DOMAIN-SUFFIX,t3.58cdn.com.cn,REJECT
+DOMAIN-SUFFIX,adshow.58.com,REJECT
+DOMAIN-SUFFIX,brandshow.58.com,REJECT
+DOMAIN-SUFFIX,jing.58.com,REJECT
+DOMAIN-SUFFIX,jumpluna.58.com,REJECT
+DOMAIN-SUFFIX,news.58.com,REJECT
+DOMAIN-SUFFIX,track.58.com,REJECT
+DOMAIN-SUFFIX,tracklog.58.com,REJECT
+DOMAIN-SUFFIX,zzpush.58.com,REJECT
+DOMAIN-SUFFIX,jump.luna.58.com,REJECT
+
+[URL Rewrite]
+^https?:\/\/app\.58\.com\/api\/home\/(advertising|appadv)\/ - reject
+^https?:\/\/app\.58\.com\/api\/log\/ - reject
+
+[Map Local]
+^https?:\/\/.+?\.58cdn\.com\.cn\/brandads\/ data-type=text data=" " status-code=200
+^https?:\/\/app\.58\.com\/api\/home\/invite\/popupAdv data-type=text data=" " status-code=200
+
+[MITM]
+hostname = %APPEND% *.58cdn.com.cn, app.58.com

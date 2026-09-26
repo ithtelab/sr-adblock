@@ -1,0 +1,55 @@
+#!name=KingsoftSeries 去广告
+#!desc=只针对 KingsoftSeries 的去广告模块，出问题时可以单独停用而不影响其他 App
+#!author=sr-adblock-factory（原始规则来自 可莉/奶思 wool_scripts）
+#!homepage=https://raw.githubusercontent.com/ithtelab/sr-adblock
+#!update=2026-09-26
+
+# ==========================================================================
+#  本文件由 sr-adblock-factory 合并生成，请勿手工编辑
+#  生成时间: 2026-09-26 07:16:51
+#
+#  合并来源：
+#    - fmz200/wool_scripts split/partJ/KingsoftSeries.sgmodule
+#
+#  规模：
+#    [Rule]                 33
+#
+#  在小火箭里的装法：
+#    只想去掉 KingsoftSeries 的广告、不想装总模块时用这个
+#    导入方式与总模块相同（配置 → 模块 → + → 粘贴链接）
+# ==========================================================================
+
+[Rule]
+DOMAIN-SUFFIX,an.m.liebao.cn,REJECT
+DOMAIN-SUFFIX,cr.m.liebao.cn,REJECT
+DOMAIN-SUFFIX,cms.an.m.liebao.cn,REJECT
+DOMAIN-SUFFIX,j.wan.liebao.cn,REJECT
+DOMAIN-SUFFIX,1.wps.cn,REJECT
+DOMAIN-SUFFIX,android-lrcresource.wps.cn,REJECT
+DOMAIN-SUFFIX,ic.wps.cn,REJECT
+DOMAIN-SUFFIX,ios-informationplatform.wps.cn,REJECT
+DOMAIN-SUFFIX,minfo.wps.cn,REJECT
+DOMAIN-SUFFIX,mostat.wps.cn,REJECT
+DOMAIN-SUFFIX,moupdate10332052.wps.cn,REJECT
+DOMAIN-SUFFIX,pcfg.wps.cn,REJECT
+DOMAIN-SUFFIX,img1.pcfg.cache.wps.cn,REJECT
+DOMAIN-SUFFIX,crashes.mo.wps.cn,REJECT
+DOMAIN-SUFFIX,img.auction-ads.wpscdn.cn,REJECT
+DOMAIN-SUFFIX,mo.res.wpscdn.cn,REJECT
+DOMAIN-SUFFIX,mobad.ijinshan.com,REJECT
+DOMAIN-SUFFIX,mlb.did.ijinshan.com,REJECT
+DOMAIN-SUFFIX,apns.ios.ijinshan.com,REJECT
+DOMAIN-SUFFIX,cdnimg.liehu.ijinshan.com,REJECT
+DOMAIN-SUFFIX,bp.mobad.ijinshan.com,REJECT
+DOMAIN-SUFFIX,rcv.mobad.ijinshan.com,REJECT
+DOMAIN-SUFFIX,sdk.mobad.ijinshan.com,REJECT
+DOMAIN-SUFFIX,unconf.mobad.ijinshan.com,REJECT
+DOMAIN-SUFFIX,rcmd.pop.ijinshan.com,REJECT
+DOMAIN-SUFFIX,pop.sjk.ijinshan.com,REJECT
+DOMAIN-SUFFIX,d.union.ijinshan.com,REJECT
+DOMAIN-SUFFIX,dl.union.ijinshan.com,REJECT
+DOMAIN-SUFFIX,counter.kingsoft.com,REJECT
+DOMAIN-SUFFIX,bu1.duba.com,REJECT
+DOMAIN-SUFFIX,bu2.duba.com,REJECT
+DOMAIN-SUFFIX,docer.com,REJECT
+DOMAIN-SUFFIX,iciba.com,REJECT

@@ -1,0 +1,39 @@
+#!name=🅶🅸🆃🅷🅴🅻🅿 资源加速
+#!desc=将 GitHub RAW 资源重定向至国内可用的镜像资源站。编辑参数可自定义切换 CDN 节点
+#!author=LOWERTOP（本仓库仅本地化脚本并重新发布）
+#!icon=https://raw.githubusercontent.com/fmz200/wool_scripts/main/icons/apps/github_00.png
+#!homepage=https://github.com/LOWERTOP/Shadowrocket-First
+#!update=2026-09-26
+#!arguments=默认CDN节点:cdn, 默认CDN策略:DIRECT
+#!arguments-desc=将 GitHub RAW 资源重定向至国内可用的镜像资源站。支持选填 jsdelivr 的其他 CDN 节点，默认CDN策略为直连策略，可自定义其他策略，若直连正常则不建议修改\n🔘 默认CDN节点\n· 默认填写：cdn\n· 可选填写：fastly\n· 可选填写：gcore\n🔘 默认CDN策略：\n· 默认填写：DIRECT\n· 可选填写：PROXY 或其他节点、代理分组的完整名称
+
+# ==========================================================================
+#  本文件由 sr-adblock-factory 合并生成，请勿手工编辑
+#  生成时间: 2026-09-26 07:16:52
+#
+#  合并来源：
+#    - LOWERTOP/Shadowrocket-First/main/GitHubCDN.sgmodule
+#    - 来源：https://github.com/LOWERTOP/Shadowrocket-First
+#
+#  规模：
+#    [Rule]                 1
+#    [URL Rewrite]          2
+#    [MITM]                 1
+#    MITM 主机名               1
+#
+#  在小火箭里的装法：
+#    导入方式：小火箭 → 配置 → 模块 → 右上角 + → 粘贴本文件链接
+# ==========================================================================
+
+[Rule]
+# 直连镜像网站
+DOMAIN-SUFFIX,jsdelivr.net,{{{默认CDN策略}}}
+
+[URL Rewrite]
+# 优先匹配带有 refs/heads/ 的 raw 路径
+^https?://raw\.githubusercontent\.com/([^/]+)/([^/]+)/refs/heads/([^/]+)/(.*)$ https://{{{默认CDN节点}}}.jsdelivr.net/gh/$1/$2@$3/$4 302
+# 匹配标准分支名/标签名/Commit 的 raw 路径
+^https?://raw\.githubusercontent\.com/([^/]+)/([^/]+)/([^/]+)/(.*)$ https://{{{默认CDN节点}}}.jsdelivr.net/gh/$1/$2@$3/$4 302
+
+[MITM]
+hostname = %APPEND% raw.githubusercontent.com

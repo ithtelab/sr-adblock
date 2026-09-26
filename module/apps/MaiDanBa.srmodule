@@ -1,0 +1,40 @@
+#!name=MaiDanBa 去广告
+#!desc=只针对 MaiDanBa 的去广告模块，出问题时可以单独停用而不影响其他 App
+#!author=sr-adblock-factory（原始规则来自 可莉/奶思 wool_scripts）
+#!homepage=https://raw.githubusercontent.com/ithtelab/sr-adblock
+#!update=2026-09-26
+
+# ==========================================================================
+#  本文件由 sr-adblock-factory 合并生成，请勿手工编辑
+#  生成时间: 2026-09-26 07:16:51
+#
+#  合并来源：
+#    - fmz200/wool_scripts split/partM/MaiDanBa.sgmodule
+#
+#  规模：
+#    [Rule]                 1
+#    [URL Rewrite]          1
+#    [Map Local]            2
+#    [Script]               1
+#    [MITM]                 1
+#
+#  在小火箭里的装法：
+#    只想去掉 MaiDanBa 的广告、不想装总模块时用这个
+#    导入方式与总模块相同（配置 → 模块 → + → 粘贴链接）
+# ==========================================================================
+
+[Rule]
+DOMAIN-KEYWORD,c-hzgt2.getui.com,REJECT
+
+[URL Rewrite]
+^https?:\/\/creditcard\.bankcomm\.(com|cn)\/tfimg\/public00\/M00\/[a-zA-Z0-9]{2}\/[a-zA-Z0-9]{2}\/[a-zA-Z0-9-]{30}\.(jpg|jpeg) - reject
+
+[Map Local]
+^https?:\/\/creditcardapp\.bankcomm\.(com|cn)\/mappweb_interface\/common\/(qryPopAds|qryLaunchAds)\.do data-type=text data=" " status-code=200
+^https?:\/\/creditcardapp\.bankcomm\.(com|cn)\/mappweb_interaction\/appInfo\/appNewestVersion data-type=text data=" " status-code=200
+
+[Script]
+mdb = type=http-response,pattern=^https?:\/\/creditcardapp\.bankcomm\.(com|cn)\/rcg\/index\.html\?callbackurl=rcg\/index\.html&orclogin=1&,script-path=https://raw.githubusercontent.com/ithtelab/sr-adblock/release/vendor/zirawell/R-Store/main/Res/Scripts/AntiAd/mdb.js,requires-body=true,timeout=60
+
+[MITM]
+hostname = %APPEND% creditcardapp.bankcomm.cn, creditcardapp.bankcomm.com, creditcard.bankcomm.cn, creditcard.bankcomm.com

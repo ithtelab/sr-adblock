@@ -1,0 +1,50 @@
+#!name=🆂🅿🅾🆃🅸🅵🆈 声破天解锁
+#!desc=自用测试模块，编辑参数以使用
+#!author=LOWERTOP（本仓库仅本地化脚本并重新发布）
+#!icon=https://raw.githubusercontent.com/fmz200/wool_scripts/main/icons/apps/Spotify_01.png
+#!homepage=https://github.com/LOWERTOP/Shadowrocket-First
+#!update=2026-09-26
+#!arguments=歌词翻译:false, 翻译账户:申请并填入百度翻译AppID, 翻译密钥:申请并填入百度翻译密钥, 精简底栏:true, 接力功能:true
+#!arguments-desc=歌词翻译功能说明\n\n· 需申请百度翻译API的ID和密钥并填入，推荐高级版\n\n· 申请时建议使用桌面设备，移动设备可能访问失败\n\n· 成功启用后，歌词界面左下角即可看到翻译按钮\n\n - 注册百度翻译个人开发者，高级版需要实名认证: \n\n    http://api.fanyi.baidu.com/register\n\n - 开通(通用文本翻译)API服务: \n\n    https://fanyi-api.baidu.com/choose\n\n - 成功后即可看到自己的AppID和密钥(不要泄露): \n\n    http://api.fanyi.baidu.com/manage/developer
+
+# ==========================================================================
+#  本文件由 sr-adblock-factory 合并生成，请勿手工编辑
+#  生成时间: 2026-09-26 07:16:55
+#
+#  合并来源：
+#    - LOWERTOP/Shadowrocket-First/main/Spotify.sgmodule
+#    - 来源：https://github.com/LOWERTOP/Shadowrocket-First
+#    - 已本地化 2 个脚本
+#
+#  规模：
+#    [Rule]                 1
+#    [URL Rewrite]          1
+#    [Map Local]            1
+#    [Script]               2
+#    [MITM]                 1
+#    MITM 主机名               2
+#
+#  在小火箭里的装法：
+#    导入方式：小火箭 → 配置 → 模块 → 右上角 + → 粘贴本文件链接
+# ==========================================================================
+
+[Rule]
+# Spotify QUIC BLOCK
+AND,((DOMAIN-SUFFIX,spotify.com),(PROTOCOL,QUIC)),REJECT-NO-DROP
+
+[URL Rewrite]
+# 001ProMax
+^https:\/\/(?:\w+-spclient|spclient\.wg)\.spotify\.com(?::443)?\/artistview\/v1\/artist\/(.*)&platform=iphone https://spclient.wg.spotify.com/artistview/v1/artist/$1&platform=ipad header
+
+[Map Local]
+# 001ProMax
+^https:\/\/(?:\w+-spclient|spclient\.wg)\.spotify\.com(?::443)?\/(?:ad-|pendragon) data-type=text data="" status-code=200
+
+[Script]
+# 001ProMax
+Spotify.Crack = type=http-response,pattern=^https:\/\/(?:\w+-spclient|spclient\.wg)\.spotify\.com(?::443)?\/(?:bootstrap|user-customization-service),script-path=https://raw.githubusercontent.com/ithtelab/sr-adblock/release/vendor/001ProMax/Surge/refs/heads/main/Script/Spotify.Crack.Dev.js,requires-body=true,binary-body-mode=true,argument=tab={{{精简底栏}}}&useractivity={{{接力功能}}}
+# app2smile
+spotify歌词翻译 = type=http-response,pattern=^https:\/\/spclient\.wg\.spotify\.com\/color-lyrics\/v2\/track\/,requires-body=1,binary-body-mode=1,max-size=0,script-path=https://raw.githubusercontent.com/ithtelab/sr-adblock/release/vendor/app2smile/rules/master/js/spotify-lyric.js,enable={{{歌词翻译}}},argument=appid={{{翻译账户}}}&securityKey={{{翻译密钥}}}
+
+[MITM]
+hostname = %APPEND% spclient.wg.spotify.com,*spclient.spotify.com

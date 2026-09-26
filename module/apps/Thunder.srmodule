@@ -1,0 +1,47 @@
+#!name=Thunder 去广告
+#!desc=只针对 Thunder 的去广告模块，出问题时可以单独停用而不影响其他 App
+#!author=sr-adblock-factory（原始规则来自 可莉/奶思 wool_scripts）
+#!homepage=https://raw.githubusercontent.com/ithtelab/sr-adblock
+#!update=2026-09-26
+
+# ==========================================================================
+#  本文件由 sr-adblock-factory 合并生成，请勿手工编辑
+#  生成时间: 2026-09-26 07:16:51
+#
+#  合并来源：
+#    - fmz200/wool_scripts split/partT/Thunder.sgmodule
+#
+#  规模：
+#    [Rule]                 16
+#    [Map Local]            2
+#    [MITM]                 1
+#
+#  在小火箭里的装法：
+#    只想去掉 Thunder 的广告、不想装总模块时用这个
+#    导入方式与总模块相同（配置 → 模块 → + → 粘贴链接）
+# ==========================================================================
+
+[Rule]
+DOMAIN-SUFFIX,adsp.xunlei.com,REJECT
+DOMAIN-SUFFIX,static-xl9-ssl.xunlei.com,REJECT
+DOMAIN-SUFFIX,biz.live.xunlei.com,REJECT
+DOMAIN-SUFFIX,ct.niu.xunlei.com,REJECT
+DOMAIN-SUFFIX,mou.niu.xunlei.com,REJECT
+DOMAIN-SUFFIX,scene.vip.xunlei.com,REJECT
+DOMAIN-SUFFIX,tw13b093.sandai.net,REJECT
+DOMAIN-SUFFIX,xlmc.sandai.net,REJECT
+DOMAIN-SUFFIX,cpm.cm.sandai.net,REJECT
+DOMAIN-SUFFIX,master.wap.dphub.sandai.net,REJECT
+DOMAIN-SUFFIX,idx.m.hub.sandai.net,REJECT
+DOMAIN-SUFFIX,liveupdate.mac.sandai.net,REJECT
+DOMAIN-SUFFIX,hub5pn.wap.sandai.net,REJECT
+DOMAIN-SUFFIX,etl.xlmc.sandai.net,REJECT
+DOMAIN-SUFFIX,test.api.xlmc.sandai.net,REJECT
+DOMAIN-SUFFIX,pre.api.tw06.xlmc.sandai.net,REJECT
+
+[Map Local]
+^https?:\/\/images\.client\.vip\.xunlei\.com\/.+?\/advert\/ data-type=text data=" " status-code=200
+^https?:\/\/api-shoulei-ssl\.xunlei\.com\/flowhub\/v\d\/slots:batchGet data-type=text data=" " status-code=200
+
+[MITM]
+hostname = %APPEND% images.client.vip.xunlei.com, api-shoulei-ssl.xunlei.com

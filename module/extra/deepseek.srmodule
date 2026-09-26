@@ -1,0 +1,41 @@
+#!name=🆃🅾🅿🅼🅾🅳🆂 DeepSeek
+#!desc=本模块主要为 DeepSeek 进行分流，可使用其他登录方式注册和登录，并尝试屏蔽上传信息的地址
+#!author=LOWERTOP（本仓库仅本地化脚本并重新发布）
+#!icon=https://raw.githubusercontent.com/fmz200/wool_scripts/main/icons/apps/DeepSeek.png
+#!homepage=https://github.com/LOWERTOP/Shadowrocket-First
+#!update=2026-09-26
+#!arguments=分流策略:PROXY, 屏蔽策略:REJECT-DROP
+#!arguments-desc=分流策略\n\n· 默认使用首页节点进行分流\n\n· 可以输入节点名称或者代理分组名称进行修改\n\n屏蔽策略\n\n· 默认屏蔽，可选填 Proxy 等其他策略
+
+# ==========================================================================
+#  本文件由 sr-adblock-factory 合并生成，请勿手工编辑
+#  生成时间: 2026-09-26 07:16:55
+#
+#  合并来源：
+#    - LOWERTOP/Shadowrocket-First/main/DeepSeek.sgmodule
+#    - 来源：https://github.com/LOWERTOP/Shadowrocket-First
+#
+#  规模：
+#    [Rule]                 13
+#    MITM 主机名               0
+#
+#  在小火箭里的装法：
+#    导入方式：小火箭 → 配置 → 模块 → 右上角 + → 粘贴本文件链接
+# ==========================================================================
+
+[Rule]
+# 以下为该软件的疑似上传地址
+DOMAIN-SUFFIX,apmplus.volces.com,{{{屏蔽策略}}}
+DOMAIN-SUFFIX,gator.volces.com,{{{屏蔽策略}}}
+DOMAIN-SUFFIX,guh50jw4-ios.mobile-messenger.intercom.com,{{{屏蔽策略}}}
+# 以下为该软件可能需代理地址
+DOMAIN-SUFFIX,deepseek.com,{{{分流策略}}}
+DOMAIN-SUFFIX,fengkongcloud.cn,{{{分流策略}}}
+DOMAIN-SUFFIX,fengkongcloud.com,{{{分流策略}}}
+DOMAIN-SUFFIX,portal101.cn,{{{分流策略}}}
+DOMAIN-SUFFIX,portal101.com,{{{分流策略}}}
+DOMAIN-SUFFIX,sentry.io,{{{分流策略}}}
+DOMAIN-SUFFIX,volces.com,{{{分流策略}}}
+DOMAIN-SUFFIX,intercom.io,{{{分流策略}}}
+DOMAIN-SUFFIX,intercom.com,{{{分流策略}}}
+DOMAIN-SUFFIX,intercomcdn.com,{{{分流策略}}}

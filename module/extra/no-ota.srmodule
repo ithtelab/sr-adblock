@@ -1,0 +1,32 @@
+#!name=屏蔽 iOS 系统更新提示
+#!desc=拦掉 iPhone 的系统更新检查，去掉「设置」上的小红点与自动下载。想更新系统时停用本模块即可
+#!author=fmz200 (可莉)（本仓库仅本地化脚本并重新发布）
+#!homepage=https://raw.githubusercontent.com/ithtelab/sr-adblock
+#!update=2026-09-26
+
+# ==========================================================================
+#  本文件由 sr-adblock-factory 合并生成，请勿手工编辑
+#  生成时间: 2026-09-26 07:16:55
+#
+#  合并来源：
+#    - fmz200/wool_scripts/main/Loon/rule/apple_update.list
+#    - 来源：https://github.com/fmz200/wool_scripts
+#
+#  规模：
+#    [Rule]                 9
+#    MITM 主机名               0
+#
+#  在小火箭里的装法：
+#    导入方式：小火箭 → 配置 → 模块 → 右上角 + → 粘贴本文件链接
+# ==========================================================================
+
+[Rule]
+DOMAIN,ns.itunes.apple.com,REJECT
+DOMAIN,appldnld.apple.com,REJECT
+DOMAIN,mesu.apple.com,REJECT
+DOMAIN,xp.apple.com,REJECT
+DOMAIN,gdmf.apple.com,REJECT
+DOMAIN-SUFFIX,iadsdk.apple.com,REJECT
+DOMAIN-SUFFIX,ads.internal.unity3d.com,REJECT
+DOMAIN-SUFFIX,ads.prd.ie.internal.unity3d.com,REJECT
+DOMAIN-SUFFIX,unityads.unity3d.com,REJECT

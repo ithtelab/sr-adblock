@@ -1,0 +1,33 @@
+#!name=🅷🅾🅽🅶🅶🆄🅾 红果果皮箱
+#!desc=红果短剧去除部分广告。模块仅为自用，不承诺完全去除相应服务的广告
+#!author=LOWERTOP（本仓库仅本地化脚本并重新发布）
+#!icon=https://raw.githubusercontent.com/LOWERTOP/Shadowrocket-First/refs/heads/main/img/hongguo.png
+#!homepage=https://github.com/LOWERTOP/Shadowrocket-First
+#!update=2026-09-26
+
+# ==========================================================================
+#  本文件由 sr-adblock-factory 合并生成，请勿手工编辑
+#  生成时间: 2026-09-26 07:16:54
+#
+#  合并来源：
+#    - LOWERTOP/Shadowrocket-First/main/HongGuo.module
+#    - 来源：https://github.com/LOWERTOP/Shadowrocket-First
+#
+#  规模：
+#    [Rule]                 7
+#    MITM 主机名               0
+#
+#  在小火箭里的装法：
+#    导入方式：小火箭 → 配置 → 模块 → 右上角 + → 粘贴本文件链接
+# ==========================================================================
+
+[Rule]
+# 放行抖音商城图片地址
+DOMAIN,p3-ad-sign.byteimg.com,DIRECT
+# 红果短剧部分去广告规则
+DOMAIN-WILDCARD,*-misc-lq.fqnovel.com,REJECT
+DOMAIN-WILDCARD,*-reading-ad.qznovelvod.com,REJECT
+DOMAIN-WILDCARD,*-ad-sign.byteimg.com,REJECT
+DOMAIN-WILDCARD,*-iosreadingvideo.qznovelvod.com,REJECT
+DOMAIN-WILDCARD,ads*-normal-l*.zijieapi.com,REJECT
+DOMAIN-SUFFIX,v11-reading-video.qznovelvod.com,REJECT

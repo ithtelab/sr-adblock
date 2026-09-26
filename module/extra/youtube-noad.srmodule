@@ -1,0 +1,33 @@
+#!name=YouTubeNoAds
+#!desc=YouTube Enhance & AdsBlock
+#!author=iab0x00（本仓库仅本地化脚本并重新发布）
+#!homepage=https://raw.githubusercontent.com/ithtelab/sr-adblock
+#!update=2026-09-26
+#!arguments=屏蔽上传按钮:true, 屏蔽选段按钮:true, 屏蔽Shorts按钮:false, 启用调试模式:false, 字幕翻译语言:off
+#!arguments-desc=\n▶ 参数说明:\n\n - 屏蔽按钮: 默认开启，可手动切换\n\n - 调试模式: 默认关闭，非调试无需切换\n\n - 翻译语言: 默认关闭，可自定义语言代码\n\n\n▶ 语言代码：\n\n - 翻译语言可根据需求自定义，语言代码遵循Google Translate Languages Codes，示例如下↓\n\n - 简中: zh-Hans，日语: ja，韩语: ko，西语: es，法语: fr
+
+# ==========================================================================
+#  本文件由 sr-adblock-factory 合并生成，请勿手工编辑
+#  生成时间: 2026-09-26 07:16:54
+#
+#  合并来源：
+#    - iab0x00/ProxyRules/main/Rewrite/YouTubeNoAd.sgmodule
+#    - 来源：https://github.com/iab0x00/ProxyRules
+#    - 已本地化 2 个脚本
+#
+#  规模：
+#    [Script]               3
+#    [MITM]                 1
+#    MITM 主机名               2
+#
+#  在小火箭里的装法：
+#    导入方式：小火箭 → 配置 → 模块 → 右上角 + → 粘贴本文件链接
+# ==========================================================================
+
+[Script]
+youtube.response = type=http-response,pattern=^https:\/\/youtubei\.googleapis\.com\/(youtubei\/v1\/(browse|next|player|search|reel\/reel_watch_sequence|guide|account\/get_setting|get_watch|log_event|config))(\?(.*))?$,script-path=https://raw.githubusercontent.com/ithtelab/sr-adblock/release/vendor/Maasea/sgmodule/master/Script/Youtube/youtube.response.js,requires-body=true,binary-body-mode=true,max-size=0,argument="{"captionLang":"{{{字幕翻译语言}}}","blockUpload":{{{屏蔽上传按钮}}},"blockImmersive":{{{屏蔽选段按钮}}},"blockShorts":{{{屏蔽Shorts按钮}}},"debug":{{{启用调试模式}}}}"
+youtube.request.init = type=http-request,pattern=^https?:\/\/[\w-]+\.googlevideo\.com\/initplayback.+&ack.*,script-path=https://raw.githubusercontent.com/ithtelab/sr-adblock/release/vendor/Maasea/sgmodule/master/Script/Youtube/youtube.request.js,requires-body=true,binary-body-mode=true,max-size=0,argument="{"captionLang":"{{{字幕翻译语言}}}"}"
+youtube.request.log_event = type=http-request,pattern=^https:\/\/youtubei\.googleapis\.com\/youtubei\/v1\/log_event,script-path=https://raw.githubusercontent.com/ithtelab/sr-adblock/release/vendor/Maasea/sgmodule/master/Script/Youtube/youtube.request.js,requires-body=true,binary-body-mode=true,max-size=0
+
+[MITM]
+hostname = %APPEND% *.googlevideo.com,youtubei.googleapis.com

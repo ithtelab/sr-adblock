@@ -1,0 +1,53 @@
+#!name=WiFiMasterKey 去广告
+#!desc=只针对 WiFiMasterKey 的去广告模块，出问题时可以单独停用而不影响其他 App
+#!author=sr-adblock-factory（原始规则来自 可莉/奶思 wool_scripts）
+#!homepage=https://raw.githubusercontent.com/ithtelab/sr-adblock
+#!update=2026-09-26
+
+# ==========================================================================
+#  本文件由 sr-adblock-factory 合并生成，请勿手工编辑
+#  生成时间: 2026-09-26 07:16:51
+#
+#  合并来源：
+#    - fmz200/wool_scripts split/partW/WiFiMasterKey.sgmodule
+#
+#  规模：
+#    [Rule]                 20
+#    [Map Local]            1
+#    [MITM]                 1
+#
+#  在小火箭里的装法：
+#    只想去掉 WiFiMasterKey 的广告、不想装总模块时用这个
+#    导入方式与总模块相同（配置 → 模块 → + → 粘贴链接）
+# ==========================================================================
+
+[Rule]
+DOMAIN-KEYWORD,app.51y5.net,REJECT
+DOMAIN-KEYWORD,apiinit.amap.com,REJECT
+DOMAIN-KEYWORD,c.51y5.net,REJECT
+DOMAIN-KEYWORD,msg.push.51y5.net,REJECT
+DOMAIN-KEYWORD,a.wkanx.com,REJECT
+DOMAIN-KEYWORD,c.wkanx.com,REJECT
+DOMAIN-KEYWORD,c1.wkanx.com,REJECT
+DOMAIN-KEYWORD,ap.51y5.net,REJECT
+DOMAIN-KEYWORD,dc.51y5.net,REJECT
+DOMAIN-KEYWORD,push-dc.51y5.net,REJECT
+DOMAIN-KEYWORD,news-log.51y5.net,REJECT
+DOMAIN-KEYWORD,login.push.51y5.net,REJECT
+DOMAIN-KEYWORD,news.51y5.net,REJECT
+DOMAIN-KEYWORD,cds.51y5.net,REJECT
+DOMAIN-KEYWORD,insurance.lianwifi.com,REJECT
+DOMAIN-KEYWORD,config.51y5.net,REJECT
+DOMAIN-KEYWORD,static.wkanx.com,REJECT
+DOMAIN-KEYWORD,config.y5en.com,REJECT
+# 感谢#All in 梭哈分享, REJECT
+DOMAIN-SUFFIX,mi.gdt.qq.com,REJECT
+# 去除导航栏免费短剧, REJECT
+DOMAIN,taichi.51y5.net,REJECT
+
+[Map Local]
+# 首页弹窗广告
+^https?:\/\/cds\.wifi188\.com\/feeds\.sec data-type=text data="{}" status-code=200 header="Content-Type:application/json"
+
+[MITM]
+hostname = %APPEND% cds.wifi188.com

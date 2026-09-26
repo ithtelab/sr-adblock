@@ -1,0 +1,33 @@
+#!name=BabyTreeParenting 去广告
+#!desc=只针对 BabyTreeParenting 的去广告模块，出问题时可以单独停用而不影响其他 App
+#!author=sr-adblock-factory（原始规则来自 可莉/奶思 wool_scripts）
+#!homepage=https://raw.githubusercontent.com/ithtelab/sr-adblock
+#!update=2026-09-26
+
+# ==========================================================================
+#  本文件由 sr-adblock-factory 合并生成，请勿手工编辑
+#  生成时间: 2026-09-26 07:16:51
+#
+#  合并来源：
+#    - fmz200/wool_scripts split/partB/BabyTreeParenting.sgmodule
+#
+#  规模：
+#    [Map Local]            5
+#    [MITM]                 1
+#
+#  在小火箭里的装法：
+#    只想去掉 BabyTreeParenting 的广告、不想装总模块时用这个
+#    导入方式与总模块相同（配置 → 模块 → + → 粘贴链接）
+# ==========================================================================
+
+[Map Local]
+^https?:\/\/aimg\.babytreeimg\.com\/group1\/M00\/*\/*\/.*.jpg data-type=text data=" " status-code=200
+# 开屏广告 感谢【alist.choc.ga】分享
+^https?:\/\/plough\.babytree\.com\/plough\.do data-type=text data=" " status-code=200
+# 弹窗广告 感谢【Ron】分享
+^https?:\/\/mapiweb\.babytree\.com\/newapi\/luban\/behavior\/receive data-type=text data=" " status-code=200
+^https?:\/\/go\.babytree\.com\/go_pregnancy\/api\/index_activity\/get_app_index_activity data-type=text data=" " status-code=200
+^https?:\/\/go\.babytree\.com\/go_tool\/api\/feeding_record\/get_home_banner_info data-type=text data="{}" status-code=200 header="Content-Type:application/json"
+
+[MITM]
+hostname = %APPEND% aimg.babytreeimg.com, plough.babytree.com, mapiweb.babytree.com, go.babytree.com

@@ -1,0 +1,36 @@
+#!name=PPTV 去广告
+#!desc=只针对 PPTV 的去广告模块，出问题时可以单独停用而不影响其他 App
+#!author=sr-adblock-factory（原始规则来自 可莉/奶思 wool_scripts）
+#!homepage=https://raw.githubusercontent.com/ithtelab/sr-adblock
+#!update=2026-09-26
+
+# ==========================================================================
+#  本文件由 sr-adblock-factory 合并生成，请勿手工编辑
+#  生成时间: 2026-09-26 07:16:51
+#
+#  合并来源：
+#    - fmz200/wool_scripts split/partP/PPTV.sgmodule
+#
+#  规模：
+#    [Rule]                 14
+#
+#  在小火箭里的装法：
+#    只想去掉 PPTV 的广告、不想装总模块时用这个
+#    导入方式与总模块相同（配置 → 模块 → + → 粘贴链接）
+# ==========================================================================
+
+[Rule]
+DOMAIN,ads.aplus.pptv.com,REJECT
+DOMAIN,ads.aplusapi.pptv.com,REJECT
+DOMAIN,asimgs.pplive.cn,REJECT
+DOMAIN,de.as.pptv.com,REJECT
+DOMAIN-SUFFIX,afp.pplive.com,REJECT
+DOMAIN-SUFFIX,gas.data.pplive.com,REJECT
+DOMAIN-SUFFIX,plt.data.pplive.com,REJECT
+DOMAIN-SUFFIX,web.data.pplive.com,REJECT
+DOMAIN-SUFFIX,pp2.pptv.com,REJECT
+DOMAIN-SUFFIX,stat.pptv.com,REJECT
+DOMAIN-SUFFIX,app.aplus.pptv.com,REJECT
+DOMAIN-SUFFIX,as.aplus.pptv.com,REJECT
+DOMAIN-SUFFIX,jp.as.pptv.com,REJECT
+DOMAIN-SUFFIX,static.g.pptv.com,REJECT

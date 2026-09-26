@@ -1,0 +1,38 @@
+#!name=csdn 去广告
+#!desc=只针对 csdn 的去广告模块，出问题时可以单独停用而不影响其他 App
+#!author=sr-adblock-factory（原始规则来自 可莉/奶思 wool_scripts）
+#!homepage=https://raw.githubusercontent.com/ithtelab/sr-adblock
+#!update=2026-09-26
+
+# ==========================================================================
+#  本文件由 sr-adblock-factory 合并生成，请勿手工编辑
+#  生成时间: 2026-09-26 07:16:51
+#
+#  合并来源：
+#    - fmz200/wool_scripts split/partC/csdn.sgmodule
+#
+#  规模：
+#    [Rule]                 5
+#    [URL Rewrite]          3
+#    [MITM]                 1
+#
+#  在小火箭里的装法：
+#    只想去掉 csdn 的广告、不想装总模块时用这个
+#    导入方式与总模块相同（配置 → 模块 → + → 粘贴链接）
+# ==========================================================================
+
+[Rule]
+DOMAIN-SUFFIX,ad.csdn.net,REJECT
+DOMAIN-SUFFIX,counter.csdn.net,REJECT
+DOMAIN-SUFFIX,dc.csdn.net,REJECT
+DOMAIN-SUFFIX,dc2.csdn.net,REJECT
+DOMAIN-SUFFIX,medal.blog.csdn.net,REJECT
+
+[URL Rewrite]
+# 感谢【Jörgen Frecht】分享
+^https?:\/\/app-gw\.csdn\.net\/silkroad-api\/api\/v\d\/assemble\/list\/pub\/channel\/app_open_screen_ad - reject
+^https?:\/\/app-gw\.csdn\.net\/abtesting\/v2\/getList? - reject
+^https?:\/\/gw\.csdn\.net\/cms-app\/v\d+\/home_page\/open_advertisement - reject
+
+[MITM]
+hostname = %APPEND% app-gw.csdn.net, gw.csdn.net
