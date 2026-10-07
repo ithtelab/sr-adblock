@@ -4,6 +4,12 @@
   domain_set       纯域名表（裸域名=精确，前导点=含子域）
   ruleset          "类型, 值[, 选项]" 的规则集（无策略列）
   surge_conf_rules Surge/SR 配置文件，取 [Rule] 段（"类型, 值, 策略[, 选项]"）
+  hosts            hosts 文件 / 纯域名表（`0.0.0.0 ad.com`），一律按含子域收录
+  adblock          AdGuard/ABP 基础规则（`||ad.com^`、`@@||ad.com^`）
+
+后两种是为了直接消费 DNS 拦截生态的名单（StevenBlack / Hagezi / OISD /
+AdGuard Home 过滤器）而加的 —— 这些名单不属于上面三种格式，以前只能先转换
+再自建一份托管，现在在 config/sources.yaml 里填 URL 即可。
 """
 from __future__ import annotations
 
@@ -76,6 +82,9 @@ class Layer:
     suffix: dict[str, set[str]] = field(default_factory=dict)
     rules: list[Rule] = field(default_factory=list)
     stats: dict[str, int] = field(default_factory=dict)
+    # 来源自带的放行域名（adblock 的 @@||domain^）。由 build.py 并入放行名单，
+    # 语义与 config/allowlist.txt 的“放行该域名及其所有子域”一致。
+    allow: set[str] = field(default_factory=set)
 
     def add_exact(self, domain: str, source: str) -> None:
         self.exact.setdefault(domain, set()).add(source)
@@ -138,6 +147,103 @@ def _as_cidr(value: str) -> str:
     if "/" in value:
         return value
     return f"{value}/32" if looks_like_ip(value) and "." in value else f"{value}/128"
+
+
+# ---------------------------------------------------------------------------
+# hosts：hosts 文件 / 纯域名表
+# ---------------------------------------------------------------------------
+
+# hosts 文件里表示“屏蔽”的地址。首列是这些（或任何 IP 字面量）时，
+# 后面的 token 才是域名；否则整行按纯域名表处理。
+_HOSTS_IPS = {"0.0.0.0", "127.0.0.1", "::1", "::", "255.255.255.255"}
+
+
+def parse_hosts(text: str, source: str) -> Layer:
+    """hosts 文件（`0.0.0.0 ad.com`）或纯域名表（一行一个域名）。
+
+    一行可以有多个域名：`0.0.0.0 a.com b.com` 两个都收。
+
+    收录语义一律是**含子域**（DOMAIN-SUFFIX）：这类名单在 DNS 拦截里的用法就是
+    “拦 ad.com 连带 *.ad.com” —— Pi-hole、AdGuard Home、esp32-c3-adblock 的
+    父域匹配都是这个行为。所以**不能**按 domain_set 的“裸域名 = 精确匹配”来收，
+    那会把子域全部漏掉（这正是直接拿 hosts 名单喂 domain_set 的坑）。
+    确实需要精确匹配时请改用 `domain_set` 格式。
+
+    `127.0.0.1 localhost` 这类单标签条目会被判为无效并计数，不会误收。
+    """
+    layer = Layer()
+    for line in text.splitlines():
+        if _is_comment(line):
+            continue
+        s = _clean(line)
+        if not s:
+            continue
+        parts = s.split()
+        if parts[0] in _HOSTS_IPS or looks_like_ip(parts[0]):
+            parts = parts[1:]          # hosts 行：首列是 IP，其余才是域名
+        elif len(parts) > 1:
+            layer.bump("malformed")    # 非 hosts 行又不止一个 token：不是域名表
+            continue
+        for token in parts:
+            domain = normalize_domain(token)
+            if not domain:
+                layer.bump("invalid")
+                continue
+            layer.add_suffix(domain, source)
+            layer.bump("domain_suffix")
+    return layer
+
+
+# ---------------------------------------------------------------------------
+# adblock：AdGuard / Adblock Plus 基础规则
+# ---------------------------------------------------------------------------
+
+# ||domain^  或  @@||domain^  后面可跟 $修饰符
+_ADBLOCK_RULE_RE = re.compile(r"^(@@)?\|\|([^\s^$/*|]+)\^?(\$.*)?$")
+
+
+def parse_adblock(text: str, source: str) -> Layer:
+    """AdGuard / Adblock Plus 基础规则里能表达成“域名后缀”的那部分。
+
+    只处理两类，其余一律跳过并计数（DNS 域名层表达不了）：
+
+      ||ad.com^                拦截 ad.com 及其子域
+      @@||ad.com^              放行 ad.com 及其子域
+      ||ad.com^$third-party    带 $修饰符 —— 修饰符无法在域名层表达，跳过
+      ||*.ad.com^              通配 —— 跳过
+      /banner\\d+/、a.com##.x    正则 / 元素隐藏 —— 跳过
+
+    注意 `@@` 放行是**全局**的：`@@||ad.com^` 会让所有来源里的 ad.com 都被放行。
+    这与小火箭“放行名单对三层同时生效”的既有设计一致，也与 AdGuard Home 同时
+    启用多份过滤器时的行为一致。来源自带放行规则会记进构建报告，便于回溯。
+    """
+    layer = Layer()
+    for line in text.splitlines():
+        if _is_comment(line):
+            continue
+        s = _clean(line)
+        if not s:
+            continue
+        if s.startswith("["):              # ABP/AdGuard 头部声明，如 [Adblock Plus 2.0]
+            continue
+        m = _ADBLOCK_RULE_RE.match(s)
+        if not m:
+            layer.bump("adblock_skipped")
+            continue
+        if m.group(3):                     # $修饰符
+            layer.bump("adblock_modifiers")
+            continue
+        domain = normalize_domain(m.group(2))
+        if not domain:
+            layer.bump("invalid")
+            continue
+        if m.group(1):                     # @@ 放行
+            layer.allow.add(domain)
+            layer.bump("adblock_allow")
+        else:
+            layer.add_suffix(domain, source)
+            layer.bump("domain_suffix")
+    return layer
 
 
 # ---------------------------------------------------------------------------
