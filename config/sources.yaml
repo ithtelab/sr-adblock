@@ -6,10 +6,16 @@
 #    domain_set        —— 纯域名表；裸域名 = 精确匹配，前导点(.foo.com) = 含子域匹配
 #    ruleset           —— "类型, 值" 的规则集（无策略列），如 "DOMAIN-SUFFIX, ad.com"
 #    surge_conf_rules  —— Surge/SR 配置文件，取 [Rule] 段（含策略列，如 ",Reject"）
+#    hosts             —— hosts 文件（0.0.0.0 ad.com）或纯域名表；一律按"含子域"收录
+#    adblock           —— AdGuard/ABP 基础规则（||ad.com^、@@||ad.com^）；@@ 并入放行名单
 #
 #  trust 字段：用于 lite 精简版。出现在 >=2 个独立来源的域名才算"高置信"。
 #              同一个来源内部重复不算，所以 trust=false 的来源不计入置信度统计
 #              （例如某来源本身就是另一个来源的搬运）。
+#
+#  required 字段：默认 false。置 true 后，这个来源拉取失败会让**整次构建失败**
+#              （而不是跳过继续）—— 留给"少了它就等于产物残缺"的关键来源。
+#              全局的"规则数暴跌 >20% 才失败"门槛对体量小的来源是兜不住的。
 # ============================================================================
 
 domain_sources:
@@ -64,6 +70,29 @@ domain_sources:
     repo: https://github.com/LOWERTOP/Shadowrocket-First
     license: 未声明
     note: 作者自用小名单，含注释说明了每条规则的用途，误杀修正很有参考价值。
+
+  # DNS 拦截生态的名单（hosts / AdGuard 格式）现在可以直接引用，不用先转换再自建
+  # 一份托管。下面两个是 esp32-c3-adblock 的默认上游，取消注释即可启用。
+  # 注意：它们和上面几个来源重叠很大（都是同一批广告/追踪域名），增量有限，
+  #       主要是补上偏西方的追踪器 / 遥测 / 恶意软件覆盖。
+  #
+  # - id: stevenblack
+  #   name: StevenBlack • hosts（广告 + 恶意软件聚合）
+  #   url: https://raw.githubusercontent.com/StevenBlack/hosts/master/hosts
+  #   format: hosts
+  #   trust: true
+  #   repo: https://github.com/StevenBlack/hosts
+  #   license: MIT
+  #   note: 约 7.2 万条。hosts 文件，首列是 0.0.0.0/127.0.0.1。
+  #
+  # - id: hagezi-light
+  #   name: HaGeZi • Multi LIGHT
+  #   url: https://raw.githubusercontent.com/hagezi/dns-blocklists/main/wildcard/light-onlydomains.txt
+  #   format: hosts
+  #   trust: true
+  #   repo: https://github.com/hagezi/dns-blocklists
+  #   license: GPL-3.0
+  #   note: 约 5.7 万条，纯域名表。偏西方的追踪器 / 遥测 / 恶意软件。
 
 # ---------------------------------------------------------------------------
 # 模块层来源（Phase 2 使用）

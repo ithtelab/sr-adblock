@@ -36,6 +36,7 @@ def build_domain_layer(sources: dict, options: dict, allow, *,
     prefix = options.get("output", {}).get("prefix", "ad")
     layers: dict[str, parse.Layer] = {}
     fetch_rows: list[tuple[str, str, str, str]] = []
+    missing_required: list[str] = []
 
     section("① 域名层：拉取上游")
     for src in sources.get("domain_sources", []):
@@ -47,7 +48,15 @@ def build_domain_layer(sources: dict, options: dict, allow, *,
         fetch_rows.append((sid, human(res.size), state, note))
         log(f"  {sid:<14} {human(res.size):>12} B  {state}  {note}")
         if not res.ok:
-            warn(f"来源 {sid} 拉取失败且无缓存，本次跳过：{res.error}", "error")
+            # 来源挂掉是"规则静默缩水"的典型征兆。默认只跳过并告警（有全局
+            # “规则数暴跌 >20%”兜底）；标了 required 的来源则直接让构建失败，
+            # 因为有些来源一挂，全量产物仍可能落在 20% 门槛之内。
+            if src.get("required"):
+                missing_required.append(sid)
+                warn(f"来源 {sid} 标记为 required 但本次不可用，构建将失败：{res.error}",
+                     "error")
+            else:
+                warn(f"来源 {sid} 拉取失败且无缓存，本次跳过：{res.error}", "error")
             continue
 
         fmt = src.get("format", "ruleset")
@@ -56,6 +65,8 @@ def build_domain_layer(sources: dict, options: dict, allow, *,
             "domain_set": parse.parse_domain_set,
             "ruleset": parse.parse_ruleset,
             "surge_conf_rules": parse.parse_surge_conf_rules,
+            "hosts": parse.parse_hosts,
+            "adblock": parse.parse_adblock,
         }.get(fmt)
         if parser is None:
             warn(f"来源 {sid} 的 format={fmt} 未知，跳过", "error")
@@ -80,6 +91,15 @@ def build_domain_layer(sources: dict, options: dict, allow, *,
     merged = merge_mod.merge_layers(layers)
     before = merged.total_domains()
     log(f"  并集后                 {human(before):>9} 条")
+
+    # 来源自带的放行规则（adblock 的 @@||domain^）并入放行名单 —— 否则一份
+    # AdGuard 名单会把它自己明确放行的域名又拦回去。语义与 allowlist.txt 一致。
+    source_allow: set[str] = set()
+    for layer in layers.values():
+        source_allow |= layer.allow
+    if source_allow:
+        allow.full |= source_allow
+        log(f"  来源自带放行规则       {human(len(source_allow)):>9} 条（已并入放行名单）")
 
     merge_mod.apply_allowlist(merged, allow)
     if merged.dropped_by_allow:
@@ -152,7 +172,8 @@ def build_domain_layer(sources: dict, options: dict, allow, *,
 
     return {"merged": merged, "written": written, "fetch_rows": fetch_rows,
             "layers": layers, "lite": lite_stats, "prefix": prefix,
-            "out_dir": out_dir, "names": names}
+            "out_dir": out_dir, "names": names,
+            "missing_required": missing_required}
 
 
 def load_mitm_extra() -> list[str]:
@@ -730,6 +751,11 @@ def write_report(result: dict, options: dict, elapsed: float) -> Path:
             note = "过滤：" + ", ".join(f"{k[9:]}:{v}" for k, v in filtered.items())
         if st.get("composite_skipped"):
             note += ("；" if note else "") + f"跳过复合规则 {st['composite_skipped']} 条"
+        ab_skipped = st.get("adblock_skipped", 0) + st.get("adblock_modifiers", 0)
+        if ab_skipped:
+            note += ("；" if note else "") + f"跳过无法表达的 adblock 规则 {ab_skipped} 条"
+        if st.get("adblock_allow"):
+            note += ("；" if note else "") + f"来源自带放行 {st['adblock_allow']} 条"
         if st.get("invalid"):
             note += ("；" if note else "") + f"无效条目 {st['invalid']} 条"
         add(f"| {names.get(sid, sid)} | {human(st.get('domains_exact', 0))} "
@@ -905,6 +931,11 @@ def main() -> int:
     log(f"  报告：{report}")
     if WARNINGS:
         log(f"  告警 {len(WARNINGS)} 条（见报告）")
+    missing_required = (result.get("domain") or {}).get("missing_required") or []
+    if missing_required:
+        log(f"  ❌ required 来源本次不可用：{', '.join(missing_required)}")
+        log("     （产物仍已写出，但构建标记为失败，不会发布）")
+        return 1
     if not ok:
         log("  ❌ 自检发现阻断性问题，构建标记为失败（产物仍已写出，请人工检查）")
         return 1
